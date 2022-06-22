@@ -2,6 +2,8 @@
   tinySSB LoRa-to-WiFiUDP/BT/USB bridge
 
   2022-04-02 <christian.tschudin@unibas.ch>
+  2022-06-22 <t.hafner@stud.unibas.ch>
+    debug trapdoor mod for IaS lecture project
 */
 
 // config:
@@ -182,11 +184,11 @@ int int_from_bytes(unsigned char upper, unsigned char lower) {
 }
 
 // output signal strength in dBm
-void set_TX_power(int output_signal_strength) {
+void set_TX_power(short output_signal_strength) {
   LoRa.setTxPower(output_signal_strength,RF_PACONFIG_PASELECT_PABOOST);
 }
 
-void set_spread_factor(int spread_factor) {
+void set_spread_factor(short spread_factor) {
   LoRa.setSpreadingFactor(spread_factor);
 }
 
@@ -194,7 +196,7 @@ void set_bandwith(int bandwidth) {
   LoRa.setSignalBandwidth(bandwidth);
 }
 
-void send_transmission_info(unsigned char *buf, short buf_len, short interface) {
+void send_transmission_info(unsigned char *buf, short buf_len) {
   int rssi = LoRa.packetRssi();
   float snr = LoRa.packetSnr();
 
@@ -223,11 +225,7 @@ void send_transmission_info(unsigned char *buf, short buf_len, short interface) 
     message[i++] = f_char_p[j];
   }
   
-  // send status to requesting interface
-  if (interface == 0) send_lora(message, len); //order
-  if (interface == 1) send_serial(message, len);
-  if (interface == 2) send_bt(message, len);
-  if (interface == 3) send_udp(message, len);
+  send_lora(message, len);
 }
 
 void forward_transmission_info(unsigned char *buf, short buf_len, short interface) {
@@ -287,12 +285,22 @@ bool parse_command(unsigned char *buf, short len, short interface) {
       }
 
     case STAT_REQUEST:
-      send_transmission_info(buf, len, interface);
-      return false;
+      // not from LoRa -> send request
+      if (interface != 0) {
+        return false;
+      }
+      // from LoRa -> answer request
+      send_transmission_info(buf, len);
+      return true;
 
     case STAT_SEND:
+      // not from LoRa -> forward normaly
+      if (interface != 0) {
+        return false;
+      }
+      // from LoRa -> complete info and forward
       forward_transmission_info(buf, len, interface);
-      return false;
+      return true;
   }
 }
 
