@@ -2,6 +2,8 @@
   tinySSB LoRa-to-WiFiUDP/BT/USB bridge
 
   2022-04-02 <christian.tschudin@unibas.ch>
+  2022-06-22 <t.hafner@stud.unibas.ch>
+    debug trapdoor mod for IaS lecture project
 */
 
 // config:
