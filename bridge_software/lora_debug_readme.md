@@ -35,6 +35,6 @@ The 64 bit long request_id is used to identify to wich request the answer belong
 The response is sent via the interface that received the request.
 
 ### STAT_SEND
-A STAT_SEND package is sent by the pridge as a response to a stat request. It contains the request_id used in the request followed by 32 bits representing the rssi and further 32 bits representing the snr.  
+A STAT_SEND package is sent by the bridge as a response to a stat request. It contains the request_id used in the request followed by 32 bits representing the rssi and further 32 bits representing the snr.  
 **| 10011001 | 11001001 | 64 bit request_id (long) | 32 bit rssi (int) | 32 bit snr (float) |**  
 A received response is forwarded to every interface excepte the one that received the response.
