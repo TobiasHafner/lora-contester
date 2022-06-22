@@ -14,12 +14,12 @@
 #define LORA_FREQ  867500000L
 // #define LORA_FREQ  868000000L
 
-#define CONTROL_ID 0b10011001
-#define SF_SET 0b10000001
-#define TX_SET 0b10010011
-#define BW_SET 0b10100101
-#define STAT_REQUEST 0b10110111
-#define STAT_SEND 0b11001001
+#define CONTROL_ID 0x99 //0b10011001
+#define SF_SET 0x81 //0b10000001
+#define TX_SET 0x93 //0b10010011
+#define BW_SET 0xA5 //0b10100101
+#define STAT_REQUEST 0xB7 //0b10110111
+#define STAT_SEND 0xC9 //0b11001001
 
 #include "heltec.h" 
 #include "tinyssb-logo.h"
