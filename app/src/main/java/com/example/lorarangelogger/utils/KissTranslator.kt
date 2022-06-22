@@ -1,4 +1,4 @@
-package com.example.lorarangelogger.tools
+package com.example.lorarangelogger.utils
 
 import java.io.InputStream
 

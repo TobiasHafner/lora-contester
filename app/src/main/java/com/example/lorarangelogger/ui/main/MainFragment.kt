@@ -8,22 +8,23 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.ActivityResultLauncher
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
-import com.example.lorarangelogger.R
+import com.example.lorarangelogger.data.LoraData
 import com.example.lorarangelogger.databinding.FragmentMainBinding
-import com.example.lorarangelogger.tools.KissTranslator
 
 private const val TAG = "LoRaFragment"
 class MainFragment : Fragment() {
+
+    private val viewModel: MainViewModel by activityViewModels()
 
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
@@ -57,7 +58,6 @@ class MainFragment : Fragment() {
         fun newInstance() = MainFragment()
     }
 
-    private lateinit var viewModel: MainViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -68,25 +68,30 @@ class MainFragment : Fragment() {
         return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-        // TODO: Use the ViewModel
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.buttonSend.isEnabled = viewModel.isOpen
+        binding.buttonClose.isEnabled = viewModel.isOpen
+
         binding.buttonSend.setOnClickListener {
             Log.d(TAG, "Trying to send data")
-            val msg = "test"
+            var msg = binding.editTextSend.text.toString()
+            if (msg == "") msg = "Test!"
             viewModel.sendData(msg)
             //Log.d(TAG, KissTranslator.makeFrame(msg.toByteArray()).decodeToString())
         }
 
-        binding.buttonReceive.setOnClickListener {
-            Log.d(TAG, "Trying to receive data")
-            viewModel.readData()
+        binding.buttonClose.setOnClickListener {
+            Log.d(TAG, "Trying to close connection")
+            viewModel.closeBT()
+            if (viewModel.isOpen) {
+                Toast.makeText(requireContext(),"Something went wrong...",Toast.LENGTH_SHORT).show()
+            } else {
+                binding.buttonSend.isEnabled = false
+                binding.buttonClose.isEnabled = false
+                Toast.makeText(requireContext(),"Connection closed!",Toast.LENGTH_SHORT).show()
+            }
         }
 
         binding.buttonConnect.setOnClickListener {
@@ -107,6 +112,10 @@ class MainFragment : Fragment() {
             }
         }
 
+        viewModel.receivedPacketsData.observe(viewLifecycleOwner) {
+            updateList(it)
+        }
+
     }
 
     private fun connect() {
@@ -114,7 +123,13 @@ class MainFragment : Fragment() {
             Log.d(TAG, "Ready to BT!")
             if(viewModel.findBT()) {
                 viewModel.openBT()
-
+                if (viewModel.isOpen) {
+                    Toast.makeText(requireContext(),"Connected!",Toast.LENGTH_SHORT).show()
+                    binding.buttonSend.isEnabled = true
+                    binding.buttonClose.isEnabled = true
+                } else {
+                    Toast.makeText(requireContext(),"Something went wrong!",Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -128,6 +143,12 @@ class MainFragment : Fragment() {
         } else {
             isBtOn = true
         }
+    }
+
+    private fun updateList(list: List<LoraData>) {
+        var listStr = ""
+        list.map { listStr+="$it\n"}
+        binding.textReceived.text = listStr
     }
 
 }
