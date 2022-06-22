@@ -182,11 +182,11 @@ int int_from_bytes(unsigned char upper, unsigned char lower) {
 }
 
 // output signal strength in dBm
-void set_TX_power(int output_signal_strength) {
+void set_TX_power(short output_signal_strength) {
   LoRa.setTxPower(output_signal_strength,RF_PACONFIG_PASELECT_PABOOST);
 }
 
-void set_spread_factor(int spread_factor) {
+void set_spread_factor(short spread_factor) {
   LoRa.setSpreadingFactor(spread_factor);
 }
 
