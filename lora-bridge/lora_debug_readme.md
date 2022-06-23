@@ -24,7 +24,7 @@ Thereby the 8 bit long sig_strength is the desired transmit power in binary repr
 
 ### BW_SET
 The bandwidth set *(BW_SET)* feature allows to set the bridges bandwidth remotely by sending the following message.  
-**| 10100101 | 10100101 | 32 bit bandwidth (int) |**  
+**| 10011001 | 10100101 | 32 bit bandwidth (int) |**  
 Thereby the 32 bit long bandwidth is the desired bandwidth in binary representation. Allowed are values between ? and ?.
 
 ### STAT_REQUEST
