@@ -17,6 +17,7 @@
 // #define LORA_FREQ  868000000L
 
 #define CONTROL_ID 0x99 //0b10011001
+#define MESSAGE_ID 0x66 //0b01100110
 #define SF_SET 0x81 //0b10000001
 #define TX_SET 0x93 //0b10010011
 #define BW_SET 0xA5 //0b10100101
@@ -179,9 +180,11 @@ void send_bt_int(int i) {
 
 // ---------------------------------------------------------------------------
 
-int int_from_bytes(unsigned char upper, unsigned char lower) {
-  return (upper << 8) + lower;
+int int_from_bytes(unsigned char b0, unsigned char b1, unsigned char b2, unsigned char b3,) {
+  return (b0 << 24) + (b1 << 16) + (b2 << 8) + b3;
 }
+
+// ---------------------------------------------------------------------------
 
 // output signal strength in dBm
 void set_TX_power(short output_signal_strength) {
@@ -194,6 +197,14 @@ void set_spread_factor(short spread_factor) {
 
 void set_bandwith(int bandwidth) {
   LoRa.setSignalBandwidth(bandwidth);
+}
+
+// ---------------------------------------------------------------------------
+void send_to_all_except(unsigned char *buf, short len, short interface) {
+  if (interface != 0) send_lora(buf, len);
+  if (interface != 1) send_serial(buf, len);
+  if (interface != 2) send_bt(buf, len);
+  if (interface != 3) send_udp(buf, len);
 }
 
 void send_transmission_info(unsigned char *buf, short buf_len) {
@@ -256,44 +267,63 @@ void forward_transmission_info(unsigned char *buf, short buf_len, short interfac
   }
 
   // send status to all except receiving interface
-  if (interface != 0) send_lora(message, len); //order
-  if (interface != 1) send_serial(message, len);
-  if (interface != 2) send_bt(message, len);
-  if (interface != 3) send_udp(message, len);
+  send_to_all_except(message, len, interface);
 }
 
 // ---------------------------------------------------------------------------
-int is_control_msg(unsigned char *buf, short len) {
-  return (*buf) == CONTROL_ID && (len > 3);
+bool is_control_pkt(unsigned char *buf, short len) {
+  return (*buf) == CONTROL_ID && (len > 2);
 }
 
-bool parse_command(unsigned char *buf, short len, short interface) {
+bool is_normal_pkt(unsigned char *buf, short len) {
+  return (*buf) == MESSAGE_ID
+}
+
+void handle_packet(unsigned char *buf, short len, short interface) {
+  if (is_normal_pkt(pkt_buf, pkt_len)) {
+      send_to_all_except(pkt_buf, pkt_len, interface);
+  }
+  if (is_control_pkt(pkt_buf, pkt_len)) {
+      parse_command(pkt_buf, pkt_len, interface);
+  }
+}
+
+void parse_command(unsigned char *buf, short len, short interface) {
   switch(buf[1]) {
     case SF_SET:
       set_spread_factor(buf[2]);
-      return true;
+      return;
 
     case TX_SET:
       set_TX_power(buf[2]);
-      return true;
+      return;
 
     case BW_SET:
       {
-        int bandwidth = int_from_bytes(buf[2], buf[3]);
+        if (len < 5) {
+          return;
+        }
+        int bandwidth = int_from_bytes(buf[2], buf[3], buf[4], buf[5]);
         set_bandwith(bandwidth);
-        return true;
+        return;
       }
 
     case STAT_REQUEST:
-      // not from LoRa -> send request
+      // not from LoRa -> send request to lora
+      if (len < 6) {
+        return;
+      }
       if (interface != 0) {
-        return false;
+        send_lora(buf, len);
       }
       // from LoRa -> answer request
       send_transmission_info(buf, len);
-      return true;
+      return;
 
     case STAT_SEND:
+      if (len < 18) {
+        return;
+      }
       // not from LoRa -> forward normaly
       if (interface != 0) {
         return false;
@@ -380,45 +410,21 @@ void loop() {
     if (pkt_len > sizeof(pkt_buf))
       pkt_len = sizeof(pkt_buf);
     LoRa.readBytes(pkt_buf, pkt_len);
-    bool no_forward = false;
-    if (is_control_msg(pkt_buf, pkt_len)) {
-      no_forward |= parse_command(pkt_buf, pkt_len, 0);
-    }
-    if (!no_forward) {
-      send_udp(pkt_buf, pkt_len);  // order?
-      send_bt(pkt_buf, pkt_len);
-      send_serial(pkt_buf, pkt_len);
-    }
+    handle_packet(pkt_buf, pkt_len, 0);
   }
 
   pkt_len = kiss_read(Serial, &serial_kiss);
   if (pkt_len > 0) {
     change = 1;
     serial_cnt += 1;
-    bool no_forward = false;
-    if (is_control_msg(serial_kiss.buf, pkt_len)) {
-      no_forward |= parse_command(pkt_buf, pkt_len, 1);
-    }
-    if (!no_forward) {
-      send_lora(serial_kiss.buf, pkt_len);  // order?
-      send_udp(serial_kiss.buf, pkt_len);
-      send_bt(serial_kiss.buf, pkt_len);
-    }
+    handle_packet(pkt_buf, pkt_len, 1);
   }
 
   pkt_len = kiss_read(BT, &bt_kiss);
   if (pkt_len > 0) {
     change = 1;
     bt_cnt += 1;
-    bool no_forward = false;
-    if(is_control_msg(bt_kiss.buf, pkt_len)) {
-      no_forward |= parse_command(pkt_buf, pkt_len, 2);
-    }
-    if (!no_forward) {
-      send_lora(bt_kiss.buf, pkt_len);   // order?
-      send_udp(bt_kiss.buf, pkt_len);
-      send_serial(bt_kiss.buf, pkt_len);
-    }
+    handle_packet(pkt_buf, pkt_len, 2);
   }
 
   if (udp_sock >= 0) {
@@ -432,15 +438,7 @@ void loop() {
       memcpy(&udp_addr, &addr, addr_len);
       udp_addr_len = addr_len;
       bool no_forward = false;
-      if(is_control_msg(pkt_buf, pkt_len)) {
-        no_forward |= parse_command(pkt_buf, pkt_len, 3);
-      }
-      if (!no_forward) {
-        send_lora(pkt_buf, pkt_len);  // order?
-        send_serial(pkt_buf, pkt_len);
-        send_bt(pkt_buf, pkt_len);
-        ShowIP();
-      }
+      handle_packet(pkt_buf, pkt_len, 3);
     }
   }
 
