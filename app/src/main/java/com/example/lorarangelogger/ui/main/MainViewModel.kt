@@ -1,5 +1,6 @@
 package com.example.lorarangelogger.ui.main
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
 import android.bluetooth.BluetoothAdapter
@@ -41,9 +42,26 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
         value = mutableListOf()
     }
     val receivedPacketsData: LiveData<List<LoraData>> = _receivedPacketsData
-    private var _isOpen = false
-    val isOpen: Boolean
-        get() = _isOpen
+
+    private var _isOpen = MutableLiveData(false)
+    val isOpen: LiveData<Boolean> = _isOpen
+
+    var selectedDevice = Pair("", "") // name, MAC
+
+
+    @SuppressLint("MissingPermission")
+    fun pairedDevices(): List<Pair<String, String>> {
+        Log.d(TAG, "Finding paired devices...")
+        mBluetoothAdapter = btManager.adapter
+        val devices = mutableListOf<Pair<String, String>>()
+
+        val pairedDevices = mBluetoothAdapter.bondedDevices
+        for (device in pairedDevices) {
+            devices.add(Pair(device.name, device.address))
+            Log.d(TAG, "Device: ${device.name}, address: ${device.address}")
+        }
+        return devices
+    }
 
     @SuppressLint("MissingPermission")
     fun findBT(): Boolean {
@@ -55,8 +73,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
             Log.d(TAG, "Devices:")
             for (device in pairedDevices) {
 
-                Log.d(TAG, "Device: ${device.name}, address: ${device.address}")
-                if (device.address == "78:21:84:A0:50:EE") {
+                if (device.address == selectedDevice.second) {
                     Log.d(TAG, "Your device: ${device.name}")
                     mmDevice = device;
                     return true
@@ -77,15 +94,13 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
             mmOutputStream = mmSocket.outputStream
             mmInputStream = mmSocket.inputStream
             Log.d(TAG, "Bluetooth opened")
-            _isOpen = true
+            _isOpen.value = true
+            beginListenForData()
         } catch (e: IOException) {
             Log.d(TAG, "exception: ${e.toString()}")
             Log.d(TAG, "Could not open bluetooth")
-            _isOpen = false
+            _isOpen.value = false
         }
-
-
-        beginListenForData()
 
 
     }
@@ -119,9 +134,23 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
         }
     }
 
-    fun sendData(msg: String) {
-        mmOutputStream.write(KissTranslator.makeFrame(msg.toByteArray()))
-        Log.d(TAG, "Message sent")
+    private fun parseData(frame: ByteArray) {
+    }
+
+    /**
+     * Tries to send the specified message over BT to the connected device.
+     * Returns true if it succeeded. If not, close the connection and return false.
+     */
+    fun sendData(msg: String) : Boolean {
+        return try {
+            mmOutputStream.write(KissTranslator.makeFrame(msg.toByteArray()))
+            Log.d(TAG, "Message sent")
+            true
+        } catch (e: IOException) {
+            Log.d(TAG, "Message couldn't be sent, some exception occured")
+            closeBT()
+            false
+        }
     }
 
     @Throws(IOException::class)
@@ -130,6 +159,6 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
         mmOutputStream.close()
         mmInputStream.close()
         mmSocket.close()
-        _isOpen = false
+        _isOpen.value = false
     }
 }
