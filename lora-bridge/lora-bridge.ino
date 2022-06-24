@@ -234,8 +234,6 @@ void send_to_all_except(unsigned char *buf, short len, short interface) {
 }
 
 void send_to_all(unsigned char *buf, short len) {
-  Serial.print("Sending to all... ");
-  buf_to_serial(buf, len);
   delay(COOLDOWN_TIME); // Lora Cooldown
 
   send_lora(buf, len);
@@ -272,10 +270,7 @@ void forward_transmission_info(unsigned char *buf, short buf_len, short interfac
   short rssi = LoRa.packetRssi();
   short snr = LoRa.packetSnr();
 
-  Serial.print("Received from Fix");
-  buf_to_serial(buf, buf_len);
-
-  short len = buf_len + 8;
+  short len = buf_len + 2;
   unsigned char message[len];
 
   // copy received info to new message
@@ -284,17 +279,8 @@ void forward_transmission_info(unsigned char *buf, short buf_len, short interfac
     message[i] = buf[i];
   }
 
-  // append own transmission info
-  // write rssi to bytes
   message[i++] = rssi;
-
-  // write snr to bytes
   message[i++] = snr;
-
-  Serial.print("Forward to app:");
-  buf_to_serial(message, len);
-  Serial.print("Interface:");
-  Serial.print(interface);
 
   // send status to all except receiving interface
   send_to_all_except(message, len, interface);
@@ -304,24 +290,19 @@ void forward_message(unsigned char *buf, short buf_len, short interface) {
   short rssi = LoRa.packetRssi();
   short snr = LoRa.packetSnr();
 
-  short len = buf_len + 8;
+  short len = buf_len + 2;
   unsigned char message[len];
 
   int i = 0;
-
-  // append own transmission info
-  // write rssi to bytes
+  message[i++] = MESSAGE_ID;
   message[i++] = rssi;
-
-  // write snr to bytes
   message[i++] = snr;
 
-  // copy received info to new message
-  for (i++; i < buf_len; i++) {
-    message[i] = buf[i];
+  // copy received message to new message
+  for (int j = 1; j < buf_len; j++) {
+    message[i++] = buf[j];
   }
 
-  // forward message to all except receiving interface
   send_to_all_except(message, len, interface);
 }
 
