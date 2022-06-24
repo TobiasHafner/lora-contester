@@ -26,6 +26,7 @@ import java.util.*
 
 
 private const val TAG = "LoRaViewModel"
+private const val FILE_NAME = "measurements.csv"
 private const val MAX_RTT = 5000L // time to wait in ms for the last packet to arrive
 
 class MainViewModel(private val context: Application) : AndroidViewModel(context) {
@@ -265,7 +266,8 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
             "Result: ${_measurementSeries.numAnswered} of ${_measurementSeries.measurements.size} returned.",
             "${_measurementSeries.label}|END"
         )
-        // Log measurement to file...
+        // Log measurement to file
+        saveSeries()
     }
 
     fun sendEcho() {
@@ -313,5 +315,12 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
     fun clearMeasurementLog() {
         measureLog.clear()
         _measureLogData.value = measureLog
+    }
+
+    fun saveSeries() {
+        context.openFileOutput(FILE_NAME, Context.MODE_PRIVATE or Context.MODE_APPEND).use {
+            val line = _measurementSeries.getCsv() + "\n"
+            it.write(line.toByteArray())
+        }
     }
 }

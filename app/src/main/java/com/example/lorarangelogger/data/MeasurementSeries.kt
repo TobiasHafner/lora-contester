@@ -1,5 +1,7 @@
 package com.example.lorarangelogger.data
 
+import java.lang.StringBuilder
+
 data class MeasurementSeries(
     val label: String,
     val location: String,
@@ -36,6 +38,20 @@ data class MeasurementSeries(
 
     fun allAnswered(): Boolean {
         return repetitions == _numAnswered
+    }
+
+    /**
+     * Format: label;location;description;delay;measurementNum;measurement.getCsv()
+     *
+     */
+    fun getCsv(): String {
+        if (measurements.isEmpty()) return ""
+        val prefix = "$label;$location;$description;$delay"
+        val sb = StringBuilder()
+        for ((i, m) in measurements.withIndex()) {
+            sb.append("$prefix;${i+1};${m.getCsv()}\n")
+        }
+        return sb.toString()
     }
 
     override fun toString(): String {

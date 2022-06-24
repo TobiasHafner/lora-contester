@@ -65,10 +65,15 @@ class SetupFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         updateSelectedDevice()
-        binding.buttonDisconnect.isEnabled = viewModel.isOpen.value == true
+        val isConnected = viewModel.isOpen.value == false
+        binding.buttonDisconnect.isEnabled = isConnected
+        binding.buttonConn.isEnabled = !isConnected && viewModel.selectedDevice.first != ""
+        binding.buttonDevice.isEnabled = !isConnected
 
         viewModel.isOpen.observe(viewLifecycleOwner) {
             binding.buttonDisconnect.isEnabled = it
+            binding.buttonConn.isEnabled = !it && viewModel.selectedDevice.first != ""
+            binding.buttonDevice.isEnabled = !it
         }
 
         binding.buttonDevice.setOnClickListener {
@@ -152,6 +157,11 @@ class SetupFragment : Fragment() {
                 viewModel.selectedDevice = devices[which]
                 updateSelectedDevice()
                 Log.d(TAG, "Selected device: ${viewModel.selectedDevice}")
+                // automatically try to connect:
+                checkBT()
+                if (isBtOn) {
+                    connect()
+                }
             }
         builder.create().show()
     }

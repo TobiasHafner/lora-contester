@@ -50,6 +50,7 @@
             android:layout_height="wrap_content"
             android:text="TextView"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textIsSelectable="true"
             android:textSize="12sp" />
     </ScrollView>
 

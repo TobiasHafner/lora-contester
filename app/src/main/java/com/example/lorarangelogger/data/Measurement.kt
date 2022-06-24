@@ -29,4 +29,11 @@ class Measurement(
         }
     }
 
+    /**
+     * Format: hasAnswered (0/1);sendTime;rtt;sendRssi;sendSnr;answerRssi;answerSnr
+     */
+    fun getCsv(): String {
+        return "${hasAnswered.compareTo(false)};$sendTime;$rtt;$sendRssi;$sendSnr;$answerRssi;$answerSnr"
+    }
+
 }
