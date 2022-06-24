@@ -6,16 +6,16 @@ import com.example.lorarangelogger.data.LoraStatReqData
 import com.example.lorarangelogger.data.LoraStatSendData
 
 object PacketParser {
-    val CONTROL_ID 0x99.toByte() //0b10011001
-    val MESSAGE_ID 0x66.toByte() //0b01100110
-    val SF_SET 0x81.toByte() //0b10000001
-    val TX_SET 0x93.toByte() //0b10010011
-    val BW_SET 0xA5.toByte() //0b10100101
-    val STAT_REQUEST 0xB7.toByte() //0b10110111
-    val STAT_SEND 0xC9.toByte() //0b11001001
+    val CONTROL_ID = 0x99.toByte() //0b10011001
+    val MESSAGE_ID = 0x66.toByte() //0b01100110
+    val SF_SET = 0x81.toByte() //0b10000001
+    val TX_SET = 0x93.toByte() //0b10010011
+    val BW_SET = 0xA5.toByte() //0b10100101
+    val STAT_REQUEST = 0xB7.toByte() //0b10110111
+    val STAT_SEND = 0xC9.toByte() //0b11001001
 
     fun create_SF_SET(sf: Byte) : ByteArray{
-        val message = mutableListOf<Byte>
+        val message = mutableListOf<Byte>()
         message.add(CONTROL_ID)
         message.add(SF_SET)
         message.add(sf)
@@ -23,7 +23,7 @@ object PacketParser {
     }
 
     fun create_TX_SET(tx: Byte) : ByteArray{
-        val message = mutableListOf<Byte>
+        val message = mutableListOf<Byte>()
         message.add(CONTROL_ID)
         message.add(TX_SET)
         message.add(tx)
@@ -31,7 +31,7 @@ object PacketParser {
     }
 
     fun create_BW_SET(bw: Int) : ByteArray{
-        val message = mutableListOf<Byte>
+        val message = mutableListOf<Byte>()
         message.add(CONTROL_ID)
         message.add(BW_SET)
         for (i in 0..3) message.add((bw shr (i*8)).toByte())
@@ -39,7 +39,7 @@ object PacketParser {
     }
 
     fun create_STAT_REQUEST(requestId: Long) : ByteArray{
-        val message = mutableListOf<Byte>
+        val message = mutableListOf<Byte>()
         message.add(CONTROL_ID)
         message.add(STAT_REQUEST)
         for (i in 0..7) message.add((requestId shr (i*8)).toByte())
@@ -47,10 +47,9 @@ object PacketParser {
     }
 
     fun create_MSG(msg: String): ByteArray {
-        val message = mutableListOf<Byte>
+        val message = mutableListOf<Byte>()
         message.add(MESSAGE_ID)
-        message.add(String.toByteArray())
-        return msg.toByteArray()
+        return message.toByteArray() + msg.toByteArray()
     }
 
     /**
@@ -66,12 +65,12 @@ object PacketParser {
             return null;
         }
         if (packet[1] == STAT_SEND) {
-            return createLoraStatReqData(packet, rcvTime)  
+            return createLoraStatSendData(packet, rcvTime)
         }
         return null 
     }
 
-    fun createLoraMsgData(packet: ByteArray, rcvTime: Long): LoraMsgData {
+    fun createLoraMsgData(packet: ByteArray, rcvTime: Long): LoraMsgData? {
         if (packet.size < 10) {
             return null
         }
@@ -83,8 +82,8 @@ object PacketParser {
         return LoraMsgData(rcvTime,rssi,snr,message))
     }
 
-    fun createLoraStatSendData(packet: ByteArray, rcvTime: Long): LoraStatSendData {
-        if (packet_size == 18) {
+    fun createLoraStatSendData(packet: ByteArray, rcvTime: Long): LoraStatSendData? {
+        if (packet.size == 18) {
             //rcv time long, rssi int, snr int, send time long
             var sendTime = littleEndianLongConversion(packet.copyOfRange(2, 10))
             var rssi = littleEndianIntConversion(packet.copyOfRange(10, 14))
@@ -115,7 +114,7 @@ object PacketParser {
     }
 
     fun littleEndianLongConversion(bytes: ByteArray): Long {
-        var result = 0
+        var result = 0L
         for (i in bytes.indices) {
             result = result or (bytes[i].toLong() shl 8 * i)
         }
