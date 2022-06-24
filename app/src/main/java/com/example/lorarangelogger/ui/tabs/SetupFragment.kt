@@ -5,21 +5,23 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.example.lorarangelogger.R
 import com.example.lorarangelogger.databinding.FragmentSetupBinding
 import com.example.lorarangelogger.ui.main.MainViewModel
 
@@ -101,6 +103,30 @@ class SetupFragment : Fragment() {
             }
         }
 
+        ArrayAdapter.createFromResource(
+            requireContext(),
+            R.array.polling_array,
+            android.R.layout.simple_spinner_item
+        ).also { adapter ->
+            // Specify the layout to use when the list of choices appears
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            // Apply the adapter to the spinner
+            binding.spinnerPoll.adapter = adapter
+            binding.spinnerPoll.setSelection(3)
+        }
+        binding.spinnerPoll.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parentView: AdapterView<*>?,
+                selectedItemView: View?,
+                position: Int,
+                id: Long
+            ) {
+                viewModel.pollingInterval = binding.spinnerPoll.selectedItem.toString().substringBefore("m").toLong()
+                Log.d(TAG, "Changed Polling rate to: ${binding.spinnerPoll.selectedItem}")
+            }
+            override fun onNothingSelected(parentView: AdapterView<*>?) {}
+        })
+
     }
 
     private fun checkBT() {
@@ -134,7 +160,7 @@ class SetupFragment : Fragment() {
         val devName = viewModel.selectedDevice.first
         binding.textDevice.text = if (devName == "") {
             binding.buttonConn.isEnabled = false
-            "No device selected"
+            "Select device:"
         } else {
             binding.buttonConn.isEnabled = true
             devName

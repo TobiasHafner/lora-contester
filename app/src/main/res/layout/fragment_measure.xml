@@ -16,6 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
             android:text="Delay (Seconds):"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             app:layout_constraintStart_toStartOf="parent"
@@ -26,6 +27,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
             android:text="# of Packets:"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             app:layout_constraintStart_toStartOf="parent"
@@ -36,6 +38,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
             android:text="Location:"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             app:layout_constraintStart_toStartOf="parent"
@@ -46,6 +49,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
             android:text="Description:"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             app:layout_constraintStart_toStartOf="parent"
@@ -56,10 +60,36 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
             android:text="Label:"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/edit_text_label" />
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            android:text="Measurement Log:"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button_measure" />
+
+        <TextView
+            android:id="@+id/text_measure_log"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button_clear_log"
+            tools:text="Answer 1 \nAnswer 2" />
 
         <EditText
             android:id="@+id/edit_text_label"
@@ -69,6 +99,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:ems="10"
+            android:imeOptions="actionDone"
             android:inputType="textPersonName"
             android:minHeight="48dp"
             android:text="Measurement 1"
@@ -83,6 +114,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:ems="10"
+            android:imeOptions="actionDone"
             android:gravity="start|top"
             android:inputType="textMultiLine"
             android:minHeight="48dp"
@@ -98,6 +130,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:ems="10"
+            android:imeOptions="actionDone"
             android:inputType="textPersonName"
             android:minHeight="48dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -112,6 +145,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:ems="10"
+            android:imeOptions="actionDone"
             android:inputType="number"
             android:minHeight="48dp"
             android:text="1"
@@ -126,6 +160,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:ems="10"
+            android:imeOptions="actionDone"
             android:inputType="number"
             android:minHeight="48dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -184,5 +219,14 @@
             android:text="Cancel"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/button_measure" />
+
+        <Button
+            android:id="@+id/button_clear_log"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="Clear Log"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/textView9" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
