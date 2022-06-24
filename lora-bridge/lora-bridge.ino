@@ -7,7 +7,6 @@
 */
 
 // config:
-SemaphoreHandle_t semaphore = nullptr;
 
 #define AP_SSID   "bridge"
 #define AP_PW     "tiny-ssb-1"
@@ -221,7 +220,7 @@ void send_to_all_except(unsigned char *buf, short len, short interface) {
   if (interface != 3) send_udp(buf, len);
 }
 
-void send_to_all(unsigned char *buf, short len, short interface) {
+void send_to_all(unsigned char *buf, short len) {
   send_lora(buf, len);
   send_serial(buf, len);
   send_bt(buf, len);
