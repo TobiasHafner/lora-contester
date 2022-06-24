@@ -340,7 +340,7 @@ void forward_message(unsigned char *buf, short buf_len, short interface) {
     message[i] = buf[i];
   }
 
-  // send status to all except receiving interface
+  // forward message to all except receiving interface
   send_to_all_except(message, len, interface);
 }
 
@@ -356,7 +356,11 @@ bool is_normal_pkt(unsigned char *buf, short len) {
 
 void handle_packet(unsigned char *buf, short len, short interface) {
   if (is_normal_pkt(buf, len)) {
-      send_to_all_except(buf, len, interface);
+      if (interface != 0) {
+        send_to_all_except(buf, len, interface);
+        return;
+      }
+      forward_message(buf, len, interface);
       return;
   }
   if (is_control_pkt(buf, len)) {
