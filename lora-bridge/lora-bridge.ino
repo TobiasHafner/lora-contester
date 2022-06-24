@@ -245,10 +245,10 @@ void send_to_all(unsigned char *buf, short len) {
 }
 
 void send_transmission_info(unsigned char *buf, short buf_len) {
-  int rssi = LoRa.packetRssi();
-  int snr = LoRa.packetSnr();
+  short rssi = LoRa.packetRssi();
+  short snr = LoRa.packetSnr();
 
-  short len = buf_len + 8;
+  short len = buf_len + 2;
   unsigned char message[len];
   int i = 0;
   message[i++] = CONTROL_ID;
@@ -259,24 +259,18 @@ void send_transmission_info(unsigned char *buf, short buf_len) {
     message[i++] = buf[j];
   }
 
-  // decode rssi to bytes
-  message[i++] = (rssi >> 24) & 0xFF;
-  message[i++] = (rssi >> 16) & 0xFF;
-  message[i++] = (rssi >> 8) & 0xFF;
-  message[i++] = rssi & 0xFF;
+  // write rssi to bytes
+  message[i++] = rssi;
 
-  // decode snr to bytes
-  message[i++] = (snr >> 24) & 0xFF;
-  message[i++] = (snr >> 16) & 0xFF;
-  message[i++] = (snr >> 8) & 0xFF;
-  message[i] = snr & 0xFF;
+  // write snr to bytes
+  message[i++] = snr;
   
   send_to_all(message, len);
 }
 
 void forward_transmission_info(unsigned char *buf, short buf_len, short interface) {
-  int rssi = LoRa.packetRssi();
-  int snr = LoRa.packetSnr();
+  short rssi = LoRa.packetRssi();
+  short snr = LoRa.packetSnr();
 
   Serial.print("Received from Fix");
   buf_to_serial(buf, buf_len);
@@ -291,17 +285,11 @@ void forward_transmission_info(unsigned char *buf, short buf_len, short interfac
   }
 
   // append own transmission info
-  // decode rssi to bytes
-  message[i++] = (rssi >> 24) & 0xFF;
-  message[i++] = (rssi >> 16) & 0xFF;
-  message[i++] = (rssi >> 8) & 0xFF;
-  message[i++] = rssi & 0xFF;
+  // write rssi to bytes
+  message[i++] = rssi;
 
-  // decode snr to bytes
-  message[i++] = (snr >> 24) & 0xFF;
-  message[i++] = (snr >> 16) & 0xFF;
-  message[i++] = (snr >> 8) & 0xFF;
-  message[i] = snr & 0xFF;
+  // write snr to bytes
+  message[i++] = snr;
 
   Serial.print("Forward to app:");
   buf_to_serial(message, len);
@@ -313,8 +301,8 @@ void forward_transmission_info(unsigned char *buf, short buf_len, short interfac
 }
 
 void forward_message(unsigned char *buf, short buf_len, short interface) {
-  int rssi = LoRa.packetRssi();
-  int snr = LoRa.packetSnr();
+  short rssi = LoRa.packetRssi();
+  short snr = LoRa.packetSnr();
 
   short len = buf_len + 8;
   unsigned char message[len];
@@ -322,17 +310,11 @@ void forward_message(unsigned char *buf, short buf_len, short interface) {
   int i = 0;
 
   // append own transmission info
-  // decode rssi to bytes
-  message[i++] = (rssi >> 24) & 0xFF;
-  message[i++] = (rssi >> 16) & 0xFF;
-  message[i++] = (rssi >> 8) & 0xFF;
-  message[i++] = rssi & 0xFF;
+  // write rssi to bytes
+  message[i++] = rssi;
 
-  // decode snr to bytes
-  message[i++] = (snr >> 24) & 0xFF;
-  message[i++] = (snr >> 16) & 0xFF;
-  message[i++] = (snr >> 8) & 0xFF;
-  message[i] = snr & 0xFF;
+  // write snr to bytes
+  message[i++] = snr;
 
   // copy received info to new message
   for (i++; i < buf_len; i++) {
