@@ -35,12 +35,12 @@ The 64 bit long request_id is used to identify to wich request the answer belong
 The response is sent to all interfaces.
 
 ### STAT_SEND
-A STAT_SEND package is sent by the bridge as a response to a stat request. It contains the request_id used in the request followed by 8 bits representing the rssi and further 8 bits representing the snr.  
-**| 10011001 | 11001001 | 64 bit request_id (long) | 8 bit rssi (int) |  8 bit snr (int) |**  
+A STAT_SEND package is sent by the bridge as a response to a stat request. It contains the request_id used in the request followed by 16 bits representing the rssi and further 8 bits representing the snr.  
+**| 10011001 | 11001001 | 64 bit request_id (long) | 16 bit rssi (int) |  8 bit snr (int) |**  
 A received response is forwarded to every interface excepte the one that received the response.
 
 When forwarded, a stat_send packet has the following form:  
-**| 10011001 | 10110111 | 64 bit request_id (long) | 8 bit rssi (int) | 8 bit snr (int) | 8 bit receiver rssi (int) | 8 bit receiver snr (int) |**
+**| 10011001 | 10110111 | 64 bit request_id (long) | 16 bit rssi (int) | 8 bit snr (int) | 16 bit receiver rssi (int) | 8 bit receiver snr (int) |**
 
 ## Debug messages
 In addition to the above mentioned debug commands there are also debug messages. These are normal packets starting with message flag. Thex have the following structure:  
@@ -48,4 +48,4 @@ In addition to the above mentioned debug commands there are also debug messages.
 The default message flag is 0b01100110 or 0x66 in hexadecimal notation.
 
 When forwarded, a message packet has the following form:  
-**| 01100110 | 8 bit receiver rssi (int) | 8 bit receiver snr (int) | message...|**
+**| 01100110 | 16 bit receiver rssi (int) | 8 bit receiver snr (int) | message...|**
