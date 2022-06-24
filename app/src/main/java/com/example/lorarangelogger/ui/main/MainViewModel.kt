@@ -132,6 +132,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
             while (mmInputStream.available() > 0) {
                 val frame = KissTranslator.readFrame(mmInputStream)
                 if (frame.isNotEmpty()) {
+                    Log.d(TAG, frame.toHex())
                     handleData(frame)
                 } else {
                     Log.d(TAG, "Bytes are empty!")
@@ -174,6 +175,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
         } else { // either not measuring or measurement doesn't belong to this series
             if (echoTimes.contains(data.sendTime)) {// answer to a requested echo
                 echoTimes.remove(data.sendTime)
+                Log.d(TAG, data.summary())
                 writeToMeasureLog(
                     data.summary(),
                     data.type,
@@ -181,6 +183,10 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
                     incomingDir = true
                 )
             } else {// unknown answer
+
+                Log.d(TAG, "Unknown echo: ${data.summary()}")
+                Log.d(TAG, "Send time: ${data.sendTime}")
+                Log.d(TAG, "Actual send time: ${echoTimes.first()}")
                 writeToMeasureLog(
                     data.summary(),
                     "UNKNOWN|${data.type}",
@@ -272,10 +278,16 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
 
     fun sendEcho() {
         val time = System.currentTimeMillis()
-        sendData(PacketParser.create_STAT_REQUEST(time))
+        //val time = 0xA1B2C3D4A1B2C3
+        val packet = PacketParser.create_STAT_REQUEST(time)
+        echoTimes.add(time)
+        sendData(packet)
         Log.d(TAG, "Made Echo: $time")
         writeToMeasureLog("", "ECHO_SENT", time = time)
+        Log.d(TAG, packet.toHex())
     }
+
+    fun ByteArray.toHex(): String = joinToString(separator = " ") { eachByte -> "%02x".format(eachByte) }
 
     private fun writeToMsgLog(
         text: String,

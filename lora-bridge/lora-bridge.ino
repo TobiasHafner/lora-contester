@@ -9,12 +9,13 @@
 // config:
 
 #define AP_SSID   "bridge"
-#define AP_PW     "tiny-ssb-1"
+#define AP_PW     "tiny-ssb-2"
 #define UDP_PORT   5001
 
-#define BTname    "tinyssb-bridge-1"
+#define BTname    "tinyssb-bridge-2"
 
 #define LORA_FREQ  867500000L
+#define COOLDOWN_TIME 10
 // #define LORA_FREQ  868000000L
 
 #define CONTROL_ID 0x99 //0b10011001
@@ -42,7 +43,7 @@ IPAddress myIP;
 int udp_sock = -1;
 struct sockaddr_in udp_addr; // wifi peer
 unsigned int udp_addr_len;
-short tx_pwr = 14, sp_fac = 7, rssi, ap_client_cnt, err_cnt;
+short tx_pwr = 14, sp_fac = 7, ap_client_cnt, err_cnt;
 int bw = 250000;
 short lora_cnt, udp_cnt, bt_cnt, serial_cnt;
 char wheel[] = "/-\\|";
@@ -62,6 +63,14 @@ struct kiss_buf serial_kiss, bt_kiss;
 #define KISS_TFEND  0xdc
 #define KISS_TFESC  0xdd
 
+void buf_to_serial(unsigned char *buf, short len) {
+  for (int i = 0; i < len; i++) {
+    Serial.print(buf[i], HEX);
+    Serial.print(" ");
+  }
+  Serial.print("\n");
+}
+
 void kiss_write(Stream &s, unsigned char *buf, short len) {
   s.write(KISS_FEND);
   for (int i = 0; i < len; i++, buf++) {
@@ -76,8 +85,11 @@ void kiss_write(Stream &s, unsigned char *buf, short len) {
 }
 
 int kiss_read(Stream &s, struct kiss_buf *kp) {
+  
   while (s.available()) {
     short c = s.read();
+    Serial.print(c, HEX);
+    Serial.print(" ");
     if (c == KISS_FEND) {
       kp->esc = 0;
       short sz = 0;
@@ -214,6 +226,7 @@ void set_bandwith(int bandwidth) {
 
 // ---------------------------------------------------------------------------
 void send_to_all_except(unsigned char *buf, short len, short interface) {
+  delay(COOLDOWN_TIME);
   if (interface != 0) send_lora(buf, len);
   if (interface != 1) send_serial(buf, len);
   if (interface != 2) send_bt(buf, len);
@@ -221,6 +234,10 @@ void send_to_all_except(unsigned char *buf, short len, short interface) {
 }
 
 void send_to_all(unsigned char *buf, short len) {
+  Serial.print("Sending to all... ");
+  buf_to_serial(buf, len);
+  delay(COOLDOWN_TIME); // Lora Cooldown
+
   send_lora(buf, len);
   send_serial(buf, len);
   send_bt(buf, len);
@@ -233,12 +250,12 @@ void send_transmission_info(unsigned char *buf, short buf_len) {
 
   short len = buf_len + 8;
   unsigned char message[len];
-
-  message[0] = CONTROL_ID;
-  message[1] = STAT_SEND;
+  int i = 0;
+  message[i++] = CONTROL_ID;
+  message[i++] = STAT_SEND;
 
   // decode timestamp to bytes
-  int i = 0;
+  
   for (int j = 2; j < len; j++) {
     message[i++] = buf[j];
   }
@@ -262,6 +279,9 @@ void forward_transmission_info(unsigned char *buf, short buf_len, short interfac
   int rssi = LoRa.packetRssi();
   int snr = LoRa.packetSnr();
 
+  Serial.print("Received from Fix");
+  buf_to_serial(buf, buf_len);
+
   short len = buf_len + 8;
   unsigned char message[len];
 
@@ -283,6 +303,11 @@ void forward_transmission_info(unsigned char *buf, short buf_len, short interfac
   message[i++] = (snr >> 16) & 0xFF;
   message[i++] = (snr >> 8) & 0xFF;
   message[i] = snr & 0xFF;
+
+  Serial.print("Forward to app:");
+  buf_to_serial(message, len);
+  Serial.print("Interface:");
+  Serial.print(interface);
 
   // send status to all except receiving interface
   send_to_all_except(message, len, interface);
@@ -321,6 +346,7 @@ void forward_message(unsigned char *buf, short buf_len, short interface) {
 
 // ---------------------------------------------------------------------------
 bool is_control_pkt(unsigned char *buf, short len) {
+
   return (*buf) == CONTROL_ID && (len > 2);
 }
 
@@ -331,9 +357,11 @@ bool is_normal_pkt(unsigned char *buf, short len) {
 void handle_packet(unsigned char *buf, short len, short interface) {
   if (is_normal_pkt(buf, len)) {
       send_to_all_except(buf, len, interface);
+      return;
   }
   if (is_control_pkt(buf, len)) {
       parse_command(buf, len, interface);
+      return;
   }
 }
 
@@ -364,6 +392,7 @@ void parse_command(unsigned char *buf, short len, short interface) {
       }
       if (interface != 0) {
         send_lora(buf, len);
+        return;
       }
       // from LoRa -> answer request
       send_transmission_info(buf, len);
@@ -378,7 +407,7 @@ void parse_command(unsigned char *buf, short len, short interface) {
         return;
       }
       // from LoRa -> complete info and forward
-      forward_transmission_info(buf, len, interface);
+      forward_transmission_info(buf, len, interface);//////////////////////////////////////////////////////////////////////////////
       return;
   }
 }
@@ -465,14 +494,14 @@ void loop() {
   if (pkt_len > 0) {
     change = 1;
     serial_cnt += 1;
-    handle_packet(pkt_buf, pkt_len, 1);
+    handle_packet(serial_kiss.buf, pkt_len, 1);
   }
 
   pkt_len = kiss_read(BT, &bt_kiss);
   if (pkt_len > 0) {
     change = 1;
     bt_cnt += 1;
-    handle_packet(pkt_buf, pkt_len, 2);
+    handle_packet(bt_kiss.buf, pkt_len, 2);
   }
 
   if (udp_sock >= 0) {
