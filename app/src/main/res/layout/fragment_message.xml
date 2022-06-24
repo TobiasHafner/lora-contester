@@ -45,10 +45,12 @@
         app:layout_constraintTop_toBottomOf="@+id/textView2">
 
         <TextView
-            android:id="@+id/text_rcvd"
+            android:id="@+id/text_msg_log"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="TextView" />
+            android:text="TextView"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textSize="12sp" />
     </ScrollView>
 
     <TextView
@@ -56,8 +58,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:text="Received Data:"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:text="Message Log:"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edit_text_snd" />
 </androidx.constraintlayout.widget.ConstraintLayout>

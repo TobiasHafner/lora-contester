@@ -14,7 +14,7 @@ import com.example.lorarangelogger.databinding.FragmentSetupBinding
 import com.example.lorarangelogger.ui.main.MainViewModel
 
 private const val TAG = "LoRaMessageFragment"
-
+private const val MAX_MSG_LENGTH = 120
 class MessageFragment : Fragment() {
     private var _binding: FragmentMessageBinding? = null
     private val binding get() = _binding!!
@@ -38,7 +38,7 @@ class MessageFragment : Fragment() {
             binding.buttonSnd.isEnabled = it
         }
 
-        viewModel.receivedPacketsData.observe(viewLifecycleOwner) {
+        viewModel.messageLogData.observe(viewLifecycleOwner) {
             updateList(it)
         }
 
@@ -50,13 +50,16 @@ class MessageFragment : Fragment() {
                 "Please enter some message to send.",
                 Toast.LENGTH_SHORT
             ).show()
+            else if (msg.length > MAX_MSG_LENGTH) Toast.makeText(
+                requireContext(),
+                "Your message is ${msg.length - MAX_MSG_LENGTH} character(s) too long!",
+                Toast.LENGTH_SHORT
+            ).show()
             else viewModel.sendData(msg)
         }
     }
 
-    private fun updateList(list: List<LoraData>) {
-        var listStr = ""
-        list.map { listStr+="$it\n"}
-        binding.textRcvd.text = listStr
+    private fun updateList(list: List<String>) {
+        binding.textMsgLog.text = list.joinToString("\n")
     }
 }

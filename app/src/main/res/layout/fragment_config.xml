@@ -22,16 +22,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Switch
-            android:id="@+id/switch_config_remote"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:minHeight="48dp"
-            android:text="Modify Remote instead"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView" />
-
         <Button
             android:id="@+id/button_config_sf"
             android:layout_width="wrap_content"
@@ -70,7 +60,7 @@
             android:background="?android:attr/listDivider"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/switch_config_remote" />
+            app:layout_constraintTop_toBottomOf="@+id/textView11" />
 
         <Spinner
             android:id="@+id/spinner_config_sf"
@@ -96,6 +86,18 @@
             android:minHeight="48dp"
             app:layout_constraintEnd_toEndOf="@+id/spinner_config_tx"
             app:layout_constraintTop_toTopOf="@+id/button_config_bw" />
+
+        <TextView
+            android:id="@+id/textView11"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="The values displayed do not correspond to the actual values set on the device."
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="@+id/textView"
+            app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
