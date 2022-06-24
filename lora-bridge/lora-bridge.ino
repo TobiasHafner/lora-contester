@@ -221,9 +221,16 @@ void send_to_all_except(unsigned char *buf, short len, short interface) {
   if (interface != 3) send_udp(buf, len);
 }
 
+void send_to_all(unsigned char *buf, short len, short interface) {
+  send_lora(buf, len);
+  send_serial(buf, len);
+  send_bt(buf, len);
+  send_udp(buf, len);
+}
+
 void send_transmission_info(unsigned char *buf, short buf_len) {
   int rssi = LoRa.packetRssi();
-  float snr = LoRa.packetSnr();
+  int snr = LoRa.packetSnr();
 
   short len = buf_len + 8;
   unsigned char message[len];
@@ -244,18 +251,17 @@ void send_transmission_info(unsigned char *buf, short buf_len) {
   message[i++] = rssi & 0xFF;
 
   // decode snr to bytes
-  unsigned char* f_char_p = reinterpret_cast<unsigned char*>(&snr);
-  int j;
-  for (j = 0; j < sizeof(float); j++) {
-    message[i++] = f_char_p[j];
-  }
+  message[i++] = (snr >> 24) & 0xFF;
+  message[i++] = (snr >> 16) & 0xFF;
+  message[i++] = (snr >> 8) & 0xFF;
+  message[i] = snr & 0xFF;
   
-  send_lora(message, len);
+  send_to_all(message, len);
 }
 
 void forward_transmission_info(unsigned char *buf, short buf_len, short interface) {
   int rssi = LoRa.packetRssi();
-  float snr = LoRa.packetSnr();
+  int snr = LoRa.packetSnr();
 
   short len = buf_len + 8;
   unsigned char message[len];
@@ -271,13 +277,43 @@ void forward_transmission_info(unsigned char *buf, short buf_len, short interfac
   message[i++] = (rssi >> 24) & 0xFF;
   message[i++] = (rssi >> 16) & 0xFF;
   message[i++] = (rssi >> 8) & 0xFF;
-  message[i] = rssi & 0xFF;
+  message[i++] = rssi & 0xFF;
 
   // decode snr to bytes
-  int j;
-  unsigned char* f_char_p = reinterpret_cast<unsigned char*>(&snr); 
-  for (j = 0; j < sizeof(float); j++) {
-    message[i++] = f_char_p[j];
+  message[i++] = (snr >> 24) & 0xFF;
+  message[i++] = (snr >> 16) & 0xFF;
+  message[i++] = (snr >> 8) & 0xFF;
+  message[i] = snr & 0xFF;
+
+  // send status to all except receiving interface
+  send_to_all_except(message, len, interface);
+}
+
+void forward_message(unsigned char *buf, short buf_len, short interface) {
+  int rssi = LoRa.packetRssi();
+  int snr = LoRa.packetSnr();
+
+  short len = buf_len + 8;
+  unsigned char message[len];
+
+  int i = 0;
+
+  // append own transmission info
+  // decode rssi to bytes
+  message[i++] = (rssi >> 24) & 0xFF;
+  message[i++] = (rssi >> 16) & 0xFF;
+  message[i++] = (rssi >> 8) & 0xFF;
+  message[i++] = rssi & 0xFF;
+
+  // decode snr to bytes
+  message[i++] = (snr >> 24) & 0xFF;
+  message[i++] = (snr >> 16) & 0xFF;
+  message[i++] = (snr >> 8) & 0xFF;
+  message[i] = snr & 0xFF;
+
+  // copy received info to new message
+  for (i++; i < buf_len; i++) {
+    message[i] = buf[i];
   }
 
   // send status to all except receiving interface
