@@ -250,12 +250,13 @@ void send_transmission_info(unsigned char *buf, short buf_len) {
 
   short len = buf_len + 8;
   unsigned char message[len];
+  
   int i = 0;
   message[i++] = CONTROL_ID;
   message[i++] = STAT_SEND;
 
   // copy timestamp to bytes
-  for (int j = 2; j < len; j++) {
+  for (int j = 2; j < buf_len; j++) {
     message[i++] = buf[j];
   }
 
@@ -277,9 +278,6 @@ void send_transmission_info(unsigned char *buf, short buf_len) {
 void forward_transmission_info(unsigned char *buf, short buf_len, short interface) {
   int rssi = LoRa.packetRssi();
   int snr = LoRa.packetSnr();
-
-  Serial.print("Received from Fix");
-  buf_to_serial(buf, buf_len);
 
   short len = buf_len + 8;
   unsigned char message[len];
@@ -303,11 +301,6 @@ void forward_transmission_info(unsigned char *buf, short buf_len, short interfac
   message[i++] = (snr >> 8) & 0xFF;
   message[i] = snr & 0xFF;
 
-  Serial.print("Forward to app:");
-  buf_to_serial(message, len);
-  Serial.print("Interface:");
-  Serial.print(interface);
-
   // send status to all except receiving interface
   send_to_all_except(message, len, interface);
 }
@@ -320,6 +313,7 @@ void forward_message(unsigned char *buf, short buf_len, short interface) {
   unsigned char message[len];
 
   int i = 0;
+  message[i++] = MESSAGE_ID;
 
   // append own transmission info
   // decode rssi to bytes
@@ -332,11 +326,11 @@ void forward_message(unsigned char *buf, short buf_len, short interface) {
   message[i++] = (snr >> 24) & 0xFF;
   message[i++] = (snr >> 16) & 0xFF;
   message[i++] = (snr >> 8) & 0xFF;
-  message[i] = snr & 0xFF;
+  message[i++] = snr & 0xFF;
 
   // copy received info to new message
-  for (i++; i < buf_len; i++) {
-    message[i] = buf[i];
+  for (int j = 1; j < buf_len; j++) {
+    message[i++] = buf[j];
   }
 
   // forward message to all except receiving interface
@@ -410,7 +404,7 @@ void parse_command(unsigned char *buf, short len, short interface) {
         return;
       }
       // from LoRa -> complete info and forward
-      forward_transmission_info(buf, len, interface);//////////////////////////////////////////////////////////////////////////////
+      forward_transmission_info(buf, len, interface);
       return;
   }
 }
