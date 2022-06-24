@@ -37,6 +37,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
     private lateinit var mmOutputStream: OutputStream
     private lateinit var mmInputStream: InputStream
 
+    var pollingInterval = 1000L
     private var stopWorker = true
 
     private val messageLog = mutableListOf<String>()
@@ -119,7 +120,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
         viewModelScope.launch(Dispatchers.IO) {
             while (!stopWorker) {
                 readData()
-                delay(1000)
+                delay(pollingInterval)
             }
         }
     }
