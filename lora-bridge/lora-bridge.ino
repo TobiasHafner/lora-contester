@@ -180,7 +180,7 @@ void send_bt_int(int i) {
 
 // ---------------------------------------------------------------------------
 
-int int_from_bytes(unsigned char b0, unsigned char b1, unsigned char b2, unsigned char b3,) {
+int int_from_bytes(unsigned char b0, unsigned char b1, unsigned char b2, unsigned char b3) {
   return (b0 << 24) + (b1 << 16) + (b2 << 8) + b3;
 }
 
@@ -276,15 +276,15 @@ bool is_control_pkt(unsigned char *buf, short len) {
 }
 
 bool is_normal_pkt(unsigned char *buf, short len) {
-  return (*buf) == MESSAGE_ID
+  return (*buf) == MESSAGE_ID;
 }
 
 void handle_packet(unsigned char *buf, short len, short interface) {
-  if (is_normal_pkt(pkt_buf, pkt_len)) {
-      send_to_all_except(pkt_buf, pkt_len, interface);
+  if (is_normal_pkt(buf, len)) {
+      send_to_all_except(buf, len, interface);
   }
-  if (is_control_pkt(pkt_buf, pkt_len)) {
-      parse_command(pkt_buf, pkt_len, interface);
+  if (is_control_pkt(buf, len)) {
+      parse_command(buf, len, interface);
   }
 }
 
@@ -326,11 +326,11 @@ void parse_command(unsigned char *buf, short len, short interface) {
       }
       // not from LoRa -> forward normaly
       if (interface != 0) {
-        return false;
+        return;
       }
       // from LoRa -> complete info and forward
       forward_transmission_info(buf, len, interface);
-      return true;
+      return;
   }
 }
 
