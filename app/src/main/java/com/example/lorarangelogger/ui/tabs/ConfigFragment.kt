@@ -13,6 +13,7 @@ import androidx.fragment.app.activityViewModels
 import com.example.lorarangelogger.R
 import com.example.lorarangelogger.databinding.FragmentConfigBinding
 import com.example.lorarangelogger.ui.main.MainViewModel
+import com.example.lorarangelogger.utils.PacketParser
 
 
 private const val TAG = "LoRaConfigFragment"
@@ -55,7 +56,10 @@ class ConfigFragment : Fragment() {
             val builder = AlertDialog.Builder(requireContext())
             builder.setTitle("Confirm config change")
             builder.setMessage("Do you really want to set the Spreading Factor to $sfValue?")
-            builder.setPositiveButton("Yes") { _, _ -> Log.d(TAG, "Yes!")}
+            builder.setPositiveButton("Yes") { _, _ ->
+                Log.d(TAG, "Yes!")
+                viewModel.sendData(PacketParser.create_SF_SET(sfValue.toByte()))
+            }
             builder.setNegativeButton("Cancel") { _, _ -> Log.d(TAG, "No!")}
             builder.show()
         }
@@ -76,7 +80,10 @@ class ConfigFragment : Fragment() {
             val builder = AlertDialog.Builder(requireContext())
             builder.setTitle("Confirm config change")
             builder.setMessage("Do you really want to set the Transmission Strength to $txValue dB?")
-            builder.setPositiveButton("Yes") { _, _ -> Log.d(TAG, "Yes!")}
+            builder.setPositiveButton("Yes") { _, _ ->
+                Log.d(TAG, "Yes!")
+                viewModel.sendData(PacketParser.create_TX_SET(txValue.toByte()))
+            }
             builder.setNegativeButton("Cancel") { _, _ -> Log.d(TAG, "No!")}
             builder.show()
         }
@@ -97,7 +104,10 @@ class ConfigFragment : Fragment() {
             val builder = AlertDialog.Builder(requireContext())
             builder.setTitle("Confirm config change")
             builder.setMessage("Do you really want to set the Bandwidth to $txValue Hz?")
-            builder.setPositiveButton("Yes") { _, _ -> Log.d(TAG, "Yes!")}
+            builder.setPositiveButton("Yes") { _, _ ->
+                Log.d(TAG, "Yes!")
+                //viewModel.sendData(PacketParser.create_BW_SET(txValue.toByte()))
+            }
             builder.setNegativeButton("Cancel") { _, _ -> Log.d(TAG, "No!")}
             builder.show()
         }

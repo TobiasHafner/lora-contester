@@ -81,28 +81,28 @@ object PacketParser {
             return null
         }
         
-        var rssi = littleEndianIntConversion(packet.copyOfRange(1, 5))
-        var snr = littleEndianIntConversion(packet.copyOfRange(5, 9))
-        var message = String(packet.copyOfRange(9, packet.size))
+        val rssi = littleEndianIntConversion(packet.copyOfRange(1, 5))
+        val snr = littleEndianIntConversion(packet.copyOfRange(5, 9))
+        val message = String(packet.copyOfRange(9, packet.size))
 
-        return LoraMsgData(rcvTime,rssi,snr,message))
+        return LoraMsgData(rcvTime,rssi,snr,message)
     }
 
     fun createLoraStatReqData(packet: ByteArray, rcvTime: Long): LoraStatReqData?{
         //rcv time long, rssi int, snr int, send time long
-        var sendTime = littleEndianLongConversion(packet.copyOfRange(2, 10))
-        var rssi = littleEndianIntConversion(packet.copyOfRange(10, 14))
-        var snr = littleEndianIntConversion(packet.copyOfRange(14, 18))
+        val sendTime = littleEndianLongConversion(packet.copyOfRange(2, 10))
+        val rssi = littleEndianIntConversion(packet.copyOfRange(10, 14))
+        val snr = littleEndianIntConversion(packet.copyOfRange(14, 18))
             
         return LoraStatReqData(rcvTime, rssi, snr, sendTime)
     }
 
     fun createLoraStatSendData(packet: ByteArray, rcvTime: Long): LoraStatSendData? {
-        var sendTime = littleEndianLongConversion(packet.copyOfRange(2, 10))
-        var sRssi = littleEndianIntConversion(packet.copyOfRange(10, 14))
-        var sSnr = littleEndianIntConversion(packet.copyOfRange(14, 18))
-        var rRssi = littleEndianIntConversion(packet.copyOfRange(18, 22))
-        var rSnr = littleEndianIntConversion(packet.copyOfRange(22), 26))
+        val sendTime = littleEndianLongConversion(packet.copyOfRange(2, 10))
+        val sRssi = littleEndianIntConversion(packet.copyOfRange(10, 14))
+        val sSnr = littleEndianIntConversion(packet.copyOfRange(14, 18))
+        val rRssi = littleEndianIntConversion(packet.copyOfRange(18, 22))
+        val rSnr = littleEndianIntConversion(packet.copyOfRange(22, 26))
 
         return LoraStatSendData(rcvTime,rRssi,rSnr,sRssi,sSnr,sendTime)
     }

@@ -239,7 +239,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
                 while (_isMeasuring.value == true && counter < series.repetitions && _isOpen.value == true) {
                     counter++
                     val time = series.makeMeasurement()
-                    //sendData(PacketParser.create_STAT_REQUEST(time))
+                    sendData(PacketParser.create_STAT_REQUEST(time))
                     Log.d(TAG, "Made measurement: $time")
                     writeToMeasureLog("Packet #$counter", "${series.label}|ECHO_SENT", time = time)
                     if (counter == series.repetitions) break
@@ -272,7 +272,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
 
     fun sendEcho() {
         val time = System.currentTimeMillis()
-        //sendData(PacketParser.create_STAT_REQUEST(time))
+        sendData(PacketParser.create_STAT_REQUEST(time))
         Log.d(TAG, "Made Echo: $time")
         writeToMeasureLog("", "ECHO_SENT", time = time)
     }
