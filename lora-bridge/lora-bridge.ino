@@ -7,6 +7,8 @@
 */
 
 // config:
+SemaphoreHandle_t semaphore = nullptr;
+
 #define AP_SSID   "bridge"
 #define AP_PW     "tiny-ssb-1"
 #define UDP_PORT   5001
@@ -41,7 +43,8 @@ IPAddress myIP;
 int udp_sock = -1;
 struct sockaddr_in udp_addr; // wifi peer
 unsigned int udp_addr_len;
-short rssi, ap_client_cnt, err_cnt;
+short tx_pwr = 14, sp_fac = 7, rssi, ap_client_cnt, err_cnt;
+int bw = 250000;
 short lora_cnt, udp_cnt, bt_cnt, serial_cnt;
 char wheel[] = "/-\\|";
 
@@ -133,9 +136,17 @@ void ShowCounters(){
   str = String(udp_cnt, DEC);    Heltec.display->drawString(38, 30, "U."+ str);
   str = String(bt_cnt, DEC);     Heltec.display->drawString(82, 20, "B."+ str);
   str = String(serial_cnt, DEC); Heltec.display->drawString(82, 30, "S." + str);
-  // rssi
-  // str = String(err_cnt, DEC);  Heltec.display->drawString(90, 30, "e:");
-  //                             Heltec.display->drawString(99, 30, str);
+}
+
+void ShowDebug() {
+  String str;
+  Heltec.display->setColor(BLACK); 
+  Heltec.display->fillRect(38, 20, DISPLAY_WIDTH-38, 22);
+  Heltec.display->setColor(WHITE); 
+
+  str = String(tx_pwr, DEC);   Heltec.display->drawString(38, 20, "TX."+ str);
+  str = String(sp_fac, DEC);    Heltec.display->drawString(38, 30, "SP."+ str);
+  str = String(bw, DEC);     Heltec.display->drawString(82, 20, "BW."+ str);
 }
 
 void send_udp(unsigned char *buf, short len) {
@@ -189,14 +200,17 @@ int int_from_bytes(unsigned char b0, unsigned char b1, unsigned char b2, unsigne
 // output signal strength in dBm
 void set_TX_power(short output_signal_strength) {
   LoRa.setTxPower(output_signal_strength,RF_PACONFIG_PASELECT_PABOOST);
+  tx_pwr = output_signal_strength;
 }
 
 void set_spread_factor(short spread_factor) {
   LoRa.setSpreadingFactor(spread_factor);
+  sp_fac = spread_factor;
 }
 
 void set_bandwith(int bandwidth) {
   LoRa.setSignalBandwidth(bandwidth);
+  bw = bandwidth;
 }
 
 // ---------------------------------------------------------------------------
@@ -207,9 +221,16 @@ void send_to_all_except(unsigned char *buf, short len, short interface) {
   if (interface != 3) send_udp(buf, len);
 }
 
+void send_to_all(unsigned char *buf, short len, short interface) {
+  send_lora(buf, len);
+  send_serial(buf, len);
+  send_bt(buf, len);
+  send_udp(buf, len);
+}
+
 void send_transmission_info(unsigned char *buf, short buf_len) {
   int rssi = LoRa.packetRssi();
-  float snr = LoRa.packetSnr();
+  int snr = LoRa.packetSnr();
 
   short len = buf_len + 8;
   unsigned char message[len];
@@ -230,18 +251,17 @@ void send_transmission_info(unsigned char *buf, short buf_len) {
   message[i++] = rssi & 0xFF;
 
   // decode snr to bytes
-  unsigned char* f_char_p = reinterpret_cast<unsigned char*>(&snr);
-  int j;
-  for (j = 0; j < sizeof(float); j++) {
-    message[i++] = f_char_p[j];
-  }
+  message[i++] = (snr >> 24) & 0xFF;
+  message[i++] = (snr >> 16) & 0xFF;
+  message[i++] = (snr >> 8) & 0xFF;
+  message[i] = snr & 0xFF;
   
-  send_lora(message, len);
+  send_to_all(message, len);
 }
 
 void forward_transmission_info(unsigned char *buf, short buf_len, short interface) {
   int rssi = LoRa.packetRssi();
-  float snr = LoRa.packetSnr();
+  int snr = LoRa.packetSnr();
 
   short len = buf_len + 8;
   unsigned char message[len];
@@ -257,13 +277,43 @@ void forward_transmission_info(unsigned char *buf, short buf_len, short interfac
   message[i++] = (rssi >> 24) & 0xFF;
   message[i++] = (rssi >> 16) & 0xFF;
   message[i++] = (rssi >> 8) & 0xFF;
-  message[i] = rssi & 0xFF;
+  message[i++] = rssi & 0xFF;
 
   // decode snr to bytes
-  int j;
-  unsigned char* f_char_p = reinterpret_cast<unsigned char*>(&snr); 
-  for (j = 0; j < sizeof(float); j++) {
-    message[i++] = f_char_p[j];
+  message[i++] = (snr >> 24) & 0xFF;
+  message[i++] = (snr >> 16) & 0xFF;
+  message[i++] = (snr >> 8) & 0xFF;
+  message[i] = snr & 0xFF;
+
+  // send status to all except receiving interface
+  send_to_all_except(message, len, interface);
+}
+
+void forward_message(unsigned char *buf, short buf_len, short interface) {
+  int rssi = LoRa.packetRssi();
+  int snr = LoRa.packetSnr();
+
+  short len = buf_len + 8;
+  unsigned char message[len];
+
+  int i = 0;
+
+  // append own transmission info
+  // decode rssi to bytes
+  message[i++] = (rssi >> 24) & 0xFF;
+  message[i++] = (rssi >> 16) & 0xFF;
+  message[i++] = (rssi >> 8) & 0xFF;
+  message[i++] = rssi & 0xFF;
+
+  // decode snr to bytes
+  message[i++] = (snr >> 24) & 0xFF;
+  message[i++] = (snr >> 16) & 0xFF;
+  message[i++] = (snr >> 8) & 0xFF;
+  message[i] = snr & 0xFF;
+
+  // copy received info to new message
+  for (i++; i < buf_len; i++) {
+    message[i] = buf[i];
   }
 
   // send status to all except receiving interface
@@ -344,10 +394,10 @@ void setup() {
                true /*Serial Enable*/,
                true /*PABOOST Enable*/,
                LORA_FREQ /*long BAND*/);
-  LoRa.setSignalBandwidth(250000);
-  LoRa.setSpreadingFactor(7);
+  LoRa.setSignalBandwidth(bw);
+  LoRa.setSpreadingFactor(sp_fac);
   LoRa.setCodingRate4(7);
-  LoRa.setTxPower(14,RF_PACONFIG_PASELECT_PABOOST);
+  LoRa.setTxPower(tx_pwr,RF_PACONFIG_PASELECT_PABOOST);
   LoRa.receive();
 
   Heltec.display->init();
@@ -390,7 +440,6 @@ void setup() {
               err_cnt += 1;
       }
   }
-
   ShowIP();
   ShowCounters();
   Heltec.display->display();

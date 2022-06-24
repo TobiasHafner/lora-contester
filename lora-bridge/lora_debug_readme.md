@@ -1,4 +1,4 @@
-# LoRa Bridge Debug Communication
+# LoRa Bridge Communication
 ## Introduction
 For easier connection testing and remote bridge configuration a set of useful debugging features were added to the lora bridge source code.
 These can be run remotely by sending specific messages to the lora bridge. In the following the offered tools together with there usecases are explained.
@@ -9,7 +9,7 @@ The debug features are controlled remotely by sending specific lora messages to 
 The 8 bit long control flag tells the bridge that the sent message contains a command.
 The 8 bit long command id specifies the command to be executed.
 After that there follows a command specific amount of bits containing parameters for the command.  
-The default control flag is 0b10011001 or 153 in decimal notation.
+The default control flag is 0b10011001 or 0x99 in hexadecimal notation.
 
 ## Features
 ### SF_SET
@@ -32,9 +32,20 @@ Stat request allows a node to request the bridge to send back the rssi and snr v
 A stat request has the following structure:  
 **| 10011001 | 10110111 | 64 bit request_id (long) |**
 The 64 bit long request_id is used to identify to wich request the answer belongs. It's recomended to use the current time on the sending node as the request_id as its unique and further allows response time measurements. The response to a stat request is the **STAT_SEND** package.
-The response is sent via the interface that received the request.
+The response is sent to all interfaces.
 
 ### STAT_SEND
 A STAT_SEND package is sent by the bridge as a response to a stat request. It contains the request_id used in the request followed by 32 bits representing the rssi and further 32 bits representing the snr.  
-**| 10011001 | 11001001 | 64 bit request_id (long) | 32 bit rssi (int) | 32 bit snr (float) |**  
+**| 10011001 | 11001001 | 64 bit request_id (long) | 32 bit rssi (int) | 32 bit snr (int) |**  
 A received response is forwarded to every interface excepte the one that received the response.
+
+When forwarded, a stat_request packet has the following form:  
+**| 10011001 | 10110111 | 64 bit request_id (long) | 32 bit rssi (int) | 32 bit snr (int) | 32 bit receiver rssi (int) | 32 bit receiver snr (int) **
+
+## Debug messages
+In addition to the above mentioned debug commands there are also debug messages. These are normal packets starting with message flag. Thex have the following structure:  
+**| 8 bit message flag | message... |**
+The default message flag is 0b01100110 or 0x66 in hexadecimal notation.
+
+When forwarded, a message packet has the following form:  
+**| 01100110 | 32 bit receiver rssi (int) | 32 bit receiver snr (int) | message...|**
