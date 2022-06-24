@@ -65,6 +65,12 @@ object PacketParser {
             return null;
         }
         if (packet[1] == STAT_SEND) {
+            if (packet.size == 18) {
+                return createLoraStatReqData(packet, rcvTime)
+            }
+            if (packet.size != 26) {
+            return null
+            }
             return createLoraStatSendData(packet, rcvTime)
         }
         return null 
@@ -82,20 +88,16 @@ object PacketParser {
         return LoraMsgData(rcvTime,rssi,snr,message))
     }
 
-    fun createLoraStatSendData(packet: ByteArray, rcvTime: Long): LoraStatSendData? {
-        if (packet.size == 18) {
-            //rcv time long, rssi int, snr int, send time long
-            var sendTime = littleEndianLongConversion(packet.copyOfRange(2, 10))
-            var rssi = littleEndianIntConversion(packet.copyOfRange(10, 14))
-            var snr = littleEndianIntConversion(packet.copyOfRange(14, 18))
+    fun createLoraStatReqData(packet: ByteArray, rcvTime: Long): LoraStatReqData?{
+        //rcv time long, rssi int, snr int, send time long
+        var sendTime = littleEndianLongConversion(packet.copyOfRange(2, 10))
+        var rssi = littleEndianIntConversion(packet.copyOfRange(10, 14))
+        var snr = littleEndianIntConversion(packet.copyOfRange(14, 18))
             
-            return LoraStatReqData(rcvTime, rssi, snr, sendTime)
-        }
+        return LoraStatReqData(rcvTime, rssi, snr, sendTime)
+    }
 
-        if (packet.size != 26) {
-            return null
-        }
-
+    fun createLoraStatSendData(packet: ByteArray, rcvTime: Long): LoraStatSendData? {
         var sendTime = littleEndianLongConversion(packet.copyOfRange(2, 10))
         var sRssi = littleEndianIntConversion(packet.copyOfRange(10, 14))
         var sSnr = littleEndianIntConversion(packet.copyOfRange(14, 18))
