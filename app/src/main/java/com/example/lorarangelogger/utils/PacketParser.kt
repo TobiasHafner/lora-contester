@@ -59,10 +59,71 @@ object PacketParser {
      * If the packet is invalid, return null
      */
     fun parsePacket(packet: ByteArray, rcvTime: Long) : LoraData? {
-        return LoraMsgData(rcvTime,0,0,"")
-        //return LoraStatReqData(rcvTime, 0, 0, 0)
-        //return LoraStatSendData(rcvTime,0,0,0,0,0)
+        if (packet[0] == MESSAGE_ID) {
+            return createLoraMsgData(packet, rcvTime)
+        }
+        if (packet[0] != CONTROL_ID) {
+            return null;
+        }
+        when (package[1]) {
+            STAT_REQUEST -> createLoraStatReqData(packet, rcvTime)
+            STAT_SEND -> createLoraStatReqData(packet, rcvTime)
+        }  
+        return null 
     }
 
+    fun createLoraMsgData(packet: ByteArray, rcvTime: Long): LoraMsgData {
+        if (packet.size < 10) {
+            return null
+        }
+        
+        var rssi = littleEndianIntConversion(packet.copyOfRange(1, 5))
+        var snr = littleEndianIntConversion(packet.copyOfRange(5, 9))
+        var message = String(packet.copyOfRange(9, packet.size))
 
+        return LoraMsgData(rcvTime,rssi,snr,message))
+    }
+
+    fun createLoraStatReqData(packet: ByteArray, rcvTime: Long): LoraStatReqData {
+        if (packet.size != 18) {
+            return null
+        }
+
+        //rcv time long, rssi int, snr int, send time long
+        var rssi = littleEndianIntConversion(packet.copyOfRange(2, 6))
+        var snr = littleEndianIntConversion(packet.copyOfRange(6, 10))
+        var sendTime = littleEndianLongConversion(packet.copyOfRange(10, 18))
+
+        return LoraStatReqData(rcvTime, rssi, snr, sendTime)
+    }
+
+    fun createLoraStatSendData(packet: ByteArray, rcvTime: Long): LoraStatSendData {
+        if (packet.size != 26) {
+            return null
+        }
+
+        var rRssi = littleEndianIntConversion(packet.copyOfRange(2, 6))
+        var rSnr = littleEndianIntConversion(packet.copyOfRange(6, 10))
+        var sRssi = littleEndianIntConversion(packet.copyOfRange(10, 14))
+        var sSnr = littleEndianIntConversion(packet.copyOfRange(14, 18))
+        var sendTime = littleEndianLongConversion(packet.copyOfRange(18, 26))
+
+        return LoraStatSendData(rcvTime,rRssi,rSnr,sRssi,sSnr,sendTime)
+    }
+
+    fun littleEndianIntConversion(bytes: ByteArray): Int {
+        var result = 0
+        for (i in bytes.indices) {
+            result = result or (bytes[i].toInt() shl 8 * i)
+        }
+        return result
+    }
+
+    fun littleEndianLongConversion(bytes: ByteArray): Long {
+        var result = 0
+        for (i in bytes.indices) {
+            result = result or (bytes[i].toLong() shl 8 * i)
+        }
+        return result
+    }
 }
