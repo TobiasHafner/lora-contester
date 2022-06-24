@@ -246,19 +246,20 @@ void send_transmission_info(unsigned char *buf, short buf_len) {
   short rssi = LoRa.packetRssi();
   short snr = LoRa.packetSnr();
 
-  short len = buf_len + 2;
+  short len = buf_len + 3;
   unsigned char message[len];
   int i = 0;
   message[i++] = CONTROL_ID;
   message[i++] = STAT_SEND;
 
   // copy timestamp to bytes
-  for (int j = 2; j < len; j++) {
+  for (int j = 2; j < buf_len; j++) {
     message[i++] = buf[j];
   }
 
   // write rssi to bytes
-  message[i++] = rssi;
+  message[i++] = (rssi >> 8) & 0xFF;
+  message[i++] = rssi & 0xFF;
 
   // write snr to bytes
   message[i++] = snr;
@@ -270,7 +271,7 @@ void forward_transmission_info(unsigned char *buf, short buf_len, short interfac
   short rssi = LoRa.packetRssi();
   short snr = LoRa.packetSnr();
 
-  short len = buf_len + 2;
+  short len = buf_len + 3;
   unsigned char message[len];
 
   // copy received info to new message
@@ -279,8 +280,10 @@ void forward_transmission_info(unsigned char *buf, short buf_len, short interfac
     message[i] = buf[i];
   }
 
-  message[i++] = rssi;
-  message[i++] = snr;
+  message[i++] = (rssi >> 8) & 0xFF;
+  message[i++] = rssi & 0xFF;
+
+  message[i] = snr;
 
   // send status to all except receiving interface
   send_to_all_except(message, len, interface);
@@ -290,12 +293,13 @@ void forward_message(unsigned char *buf, short buf_len, short interface) {
   short rssi = LoRa.packetRssi();
   short snr = LoRa.packetSnr();
 
-  short len = buf_len + 2;
+  short len = buf_len + 3;
   unsigned char message[len];
 
   int i = 0;
   message[i++] = MESSAGE_ID;
-  message[i++] = rssi;
+  message[i++] = (rssi >> 8) & 0xFF;
+  message[i++] = rssi & 0xFF;
   message[i++] = snr;
 
   // copy received message to new message
@@ -343,7 +347,7 @@ void parse_command(unsigned char *buf, short len, short interface) {
 
     case BW_SET:
       {
-        if (len < 5) {
+        if (len < 6) {
           return;
         }
         int bandwidth = int_from_bytes(buf[2], buf[3], buf[4], buf[5]);
@@ -353,7 +357,7 @@ void parse_command(unsigned char *buf, short len, short interface) {
 
     case STAT_REQUEST:
       // not from LoRa -> send request to lora
-      if (len < 6) {
+      if (len < 10) {
         return;
       }
       if (interface != 0) {
@@ -365,7 +369,7 @@ void parse_command(unsigned char *buf, short len, short interface) {
       return;
 
     case STAT_SEND:
-      if (len < 18) {
+      if (len < 13) {
         return;
       }
       // not from LoRa -> forward normaly

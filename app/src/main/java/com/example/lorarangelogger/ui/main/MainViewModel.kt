@@ -132,7 +132,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
             while (mmInputStream.available() > 0) {
                 val frame = KissTranslator.readFrame(mmInputStream)
                 if (frame.isNotEmpty()) {
-                    Log.d(TAG, frame.toHex())
+                    Log.d(TAG, "Incoming: ${frame.toHex()}")
                     handleData(frame)
                 } else {
                     Log.d(TAG, "Bytes are empty!")

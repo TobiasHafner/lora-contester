@@ -82,8 +82,9 @@ class MeasureFragment : Fragment() {
 
     private fun startMeasurement() {
         val label = binding.editTextLabel.text.toString()
-        val location = binding.editTextLocation.text.toString()
-        val description = binding.editTextDescription.text.toString()
+            .replace(";", ",") // can't have ; , since it's the separator in the csv file
+        val location = binding.editTextLocation.text.toString().replace(";", ",")
+        val description = binding.editTextDescription.text.toString().replace(";", ",")
         val repetitionsStr = binding.editTextRepetitions.text.toString()
         val delayStr = binding.editTextDelay.text.toString()
         if (label == "" || location == "" || description == "" || repetitionsStr == "" || delayStr == "") {
