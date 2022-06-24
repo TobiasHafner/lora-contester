@@ -254,8 +254,7 @@ void send_transmission_info(unsigned char *buf, short buf_len) {
   message[i++] = CONTROL_ID;
   message[i++] = STAT_SEND;
 
-  // decode timestamp to bytes
-  
+  // copy timestamp to bytes
   for (int j = 2; j < len; j++) {
     message[i++] = buf[j];
   }
