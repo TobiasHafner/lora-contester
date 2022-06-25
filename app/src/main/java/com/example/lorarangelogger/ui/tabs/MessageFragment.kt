@@ -57,9 +57,11 @@ class MessageFragment : Fragment() {
             ).show()
             else viewModel.sendData(msg)
         }
+
+        binding.buttonClearMsg.setOnClickListener { viewModel.clearMessageLog() }
     }
 
     private fun updateList(list: List<String>) {
-        binding.textMsgLog.text = list.joinToString("\n")
+        binding.textMsgLog.text = list.joinToString("\n\n")
     }
 }

@@ -15,17 +15,17 @@ The default control flag is 0b10011001 or 0x99 in hexadecimal notation.
 ### SF_SET
 The spreading factor set *(SF_SET)* feature allows to set the bridges spreading factor remotely by sending the following message.  
 **| 10011001 | 10000001 | 8 bit spread_fact (byte) |**  
-Thereby the 8 bit long spread_fact is the desired spread facor binary representation. Allowed are values between ? and ?.
+Thereby the 8 bit long spread_fact is the desired spread facor binary representation. Allowed are values between 7 (default) and 12.
 
 ### TX_SET
 The transmission power set *(TX_SET)* feature allows to set the bridges LoRa signal strength remotely by sending the following message.  
 **| 10011001 | 10010011 | 8 bit sig_strength (byte) |**  
-Thereby the 8 bit long sig_strength is the desired transmit power in binary representation. Allowed are values between 0 dBm and 20 dBm.
+Thereby the 8 bit long sig_strength is the desired transmit power in binary representation. Allowed are values between 2 dBm and 17 dBm (default: 14 dBm (=max allowed in Europe)).
 
 ### BW_SET
 The bandwidth set *(BW_SET)* feature allows to set the bridges bandwidth remotely by sending the following message.  
 **| 10011001 | 10100101 | 32 bit bandwidth (int) |**  
-Thereby the 32 bit long bandwidth is the desired bandwidth in binary representation. Allowed are values between ? and ?.
+Thereby the 32 bit long bandwidth is the desired bandwidth in binary representation. Allowed are values: 7800, 10400, 15600, 20800, 31250, 41700, 62500, 125000 (default), 250000.
 
 ### STAT_REQUEST
 Stat request allows a node to request the bridge to send back the rssi and snr values from the request packackage back to the requesting node.

@@ -1,15 +1,20 @@
 package com.example.lorarangelogger.ui.tabs
 
+import android.app.Activity
+import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.example.lorarangelogger.data.MeasurementSeries
 import com.example.lorarangelogger.databinding.FragmentMeasureBinding
 import com.example.lorarangelogger.ui.main.MainViewModel
-import com.example.lorarangelogger.data.MeasurementSeries
+
 
 private const val TAG = "LoRaMeasureFragment"
 
@@ -43,25 +48,15 @@ class MeasureFragment : Fragment() {
         }
 
         updateLog(viewModel.measureLogData.value!!)
-        viewModel.measureLogData.observe(viewLifecycleOwner) {
-            updateLog(it)
-        }
-
-        binding.buttonEcho.setOnClickListener {
-            viewModel.sendEcho()
-        }
-
+        viewModel.measureLogData.observe(viewLifecycleOwner) { updateLog(it) }
+        binding.buttonEcho.setOnClickListener { viewModel.sendEcho() }
         binding.buttonMeasure.setOnClickListener {
+            val inputMethodManager = requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
             startMeasurement()
         }
-
-        binding.buttonCancel.setOnClickListener {
-            viewModel.stopSeries()
-        }
-
-        binding.buttonClearLog.setOnClickListener {
-            viewModel.clearMeasurementLog()
-        }
+        binding.buttonCancel.setOnClickListener { viewModel.stopSeries() }
+        binding.buttonClearLog.setOnClickListener { viewModel.clearMeasurementLog() }
 
 
     }
@@ -113,6 +108,6 @@ class MeasureFragment : Fragment() {
 
     private fun updateLog(list: List<String>) {
         binding.buttonClearLog.isEnabled = list.isNotEmpty()
-        binding.textMeasureLog.text = list.joinToString("\n")
+        binding.textMeasureLog.text = list.joinToString("\n\n")
     }
 }

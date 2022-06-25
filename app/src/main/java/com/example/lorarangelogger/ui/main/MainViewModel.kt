@@ -26,10 +26,10 @@ import java.util.*
 
 
 private const val TAG = "LoRaViewModel"
-private const val FILE_NAME = "measurements.csv"
 private const val MAX_RTT = 5000L // time to wait in ms for the last packet to arrive
 
 class MainViewModel(private val context: Application) : AndroidViewModel(context) {
+    val fileName = "measurements.csv"
     private lateinit var mBluetoothAdapter: BluetoothAdapter
     private var btManager: BluetoothManager =
         context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -168,7 +168,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
         if (_isMeasuring.value == true && _measurementSeries.handleAnswer(data)) {
             writeToMeasureLog(
                 data.summary(),
-                "${_measurementSeries.label}|${data.type}",
+                "${_measurementSeries.label} | ${data.type}",
                 time = data.rcvTime,
                 incomingDir = true
             )
@@ -177,19 +177,16 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
                 echoTimes.remove(data.sendTime)
                 Log.d(TAG, data.summary())
                 writeToMeasureLog(
-                    data.summary(),
-                    data.type,
-                    time = data.rcvTime,
-                    incomingDir = true
+                    data.summary(), data.type, time = data.rcvTime, incomingDir = true
                 )
-            } else {// unknown answer
-
+            } else {
+                // unknown answer
                 Log.d(TAG, "Unknown echo: ${data.summary()}")
                 Log.d(TAG, "Send time: ${data.sendTime}")
                 Log.d(TAG, "Actual send time: ${echoTimes.first()}")
                 writeToMeasureLog(
                     data.summary(),
-                    "UNKNOWN|${data.type}",
+                    "UNKNOWN | ${data.type}",
                     time = data.rcvTime,
                     incomingDir = true
                 )
@@ -239,7 +236,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
         if (_isMeasuring.value == false) {
             _measurementSeries = series
             _isMeasuring.value = true
-            writeToMeasureLog("Starting ${series.label}", "${series.label}|START")
+            writeToMeasureLog("Starting ${series.label}", "${series.label} | START")
             viewModelScope.launch(Dispatchers.IO) {
                 var counter = 0
                 while (_isMeasuring.value == true && counter < series.repetitions && _isOpen.value == true) {
@@ -247,15 +244,20 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
                     val time = series.makeMeasurement()
                     sendData(PacketParser.create_STAT_REQUEST(time))
                     Log.d(TAG, "Made measurement: $time")
-                    writeToMeasureLog("Packet #$counter", "${series.label}|ECHO_SENT", time = time)
+                    writeToMeasureLog(
+                        "Sent Packet #$counter",
+                        "${series.label} | ECHO_SENT",
+                        time = time
+                    )
                     if (counter == series.repetitions) break
                     delay(series.delay * 1000L)
                 }
                 if (_isMeasuring.value == true) {
+                    delay(MAX_RTT/5) // give last packet a bit of time to arrive
                     if (!series.allAnswered() && _isOpen.value == true) {
-                        delay(MAX_RTT) // wait for late packets
+                        Log.d(TAG, "Wait for late packets..., ${series.allAnswered()}")
+                        delay(MAX_RTT * 4 / 5) // wait for late packets
                     }
-                    // finish measurement
                     stopSeries()
                 }
             }
@@ -270,7 +272,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
         Log.d(TAG, _measurementSeries.toString())
         writeToMeasureLog(
             "Result: ${_measurementSeries.numAnswered} of ${_measurementSeries.measurements.size} returned.",
-            "${_measurementSeries.label}|END"
+            "${_measurementSeries.label} | END"
         )
         // Log measurement to file
         saveSeries()
@@ -287,7 +289,8 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
         Log.d(TAG, packet.toHex())
     }
 
-    fun ByteArray.toHex(): String = joinToString(separator = " ") { eachByte -> "%02x".format(eachByte) }
+    private fun ByteArray.toHex(): String =
+        joinToString(separator = " ") { eachByte -> "%02x".format(eachByte) }
 
     private fun writeToMsgLog(
         text: String,
@@ -296,10 +299,9 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
         incomingDir: Boolean = false
     ) {
         val t = TimeHelper.getTime(time)
-        var msg = if (incomingDir) "<<" else ">>"
-        msg += "  $t    [$type]: "
-        if (text.isNotEmpty()) msg += "\n      "
-        msg += text
+        var msg = if (incomingDir) "<-" else "->"
+        msg += "  $t    [$type]"
+        if (text.isNotEmpty()) msg += ":\n       $text"
         messageLog.add(0, msg)
         _messageLogData.postValue(messageLog.toList()) // create copy so we don't get a ConcurrentModificationException
     }
@@ -316,10 +318,9 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
         incomingDir: Boolean = false
     ) {
         val t = TimeHelper.getTime(time)
-        var msg = if (incomingDir) "<<" else ">>"
-        msg += "  $t    [$type]: "
-        if (text.isNotEmpty()) msg += "\n      "
-        msg += text
+        var msg = if (incomingDir) "<--" else "-->"
+        msg += "  $t    [$type]"
+        if (text.isNotEmpty()) msg += ":\n       $text"
         measureLog.add(0, msg)
         _measureLogData.postValue(measureLog.toList()) // create copy so we don't get a ConcurrentModificationException
     }
@@ -330,7 +331,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
     }
 
     fun saveSeries() {
-        context.openFileOutput(FILE_NAME, Context.MODE_PRIVATE or Context.MODE_APPEND).use {
+        context.openFileOutput(fileName, Context.MODE_PRIVATE or Context.MODE_APPEND).use {
             val line = _measurementSeries.getCsv() + "\n"
             it.write(line.toByteArray())
         }

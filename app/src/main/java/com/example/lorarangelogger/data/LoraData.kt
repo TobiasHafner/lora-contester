@@ -13,8 +13,4 @@ interface LoraData {
     val type: String
 
     fun summary(): String
-
-    fun headerSummary(): String {
-        return "($rssi | $snr)"
-    }
 }
