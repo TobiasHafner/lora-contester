@@ -27,6 +27,7 @@ import java.util.*
 
 private const val TAG = "LoRaViewModel"
 private const val MAX_RTT = 5000L // time to wait in ms for the last packet to arrive
+private const val connectionCheckInterval = 30_000L //interval for checking if bt is still connected
 
 class MainViewModel(private val context: Application) : AndroidViewModel(context) {
     val fileName = "measurements.csv"
@@ -39,8 +40,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
     private lateinit var mmInputStream: InputStream
 
     var pollingInterval = 1000L
-    private val connectionCheckInterval =
-        30_000L //interval for checking if the device can still be reached
+
     private var stopWorker = true
 
     private val messageLog = mutableListOf<String>()
@@ -87,7 +87,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
             for (device in pairedDevices) {
                 if (device.address == selectedDevice.second) {
                     Log.d(TAG, "Your device: ${device.name}")
-                    mmDevice = device;
+                    mmDevice = device
                     return true
                 }
             }
@@ -251,7 +251,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
                 while (_isMeasuring.value == true && counter < series.repetitions && _isOpen.value == true) {
                     counter++
                     val time = series.makeMeasurement()
-                    if(sendData(PacketParser.create_STAT_REQUEST(time))) {
+                    if (sendData(PacketParser.create_STAT_REQUEST(time))) {
                         Log.d(TAG, "Made measurement: $time")
                         writeToMeasureLog(
                             "Sent Packet #$counter",
