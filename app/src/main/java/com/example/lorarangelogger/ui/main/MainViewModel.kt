@@ -39,6 +39,8 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
     private lateinit var mmInputStream: InputStream
 
     var pollingInterval = 1000L
+    private val connectionCheckInterval =
+        30_000L //interval for checking if the device can still be reached
     private var stopWorker = true
 
     private val messageLog = mutableListOf<String>()
@@ -50,7 +52,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
 
     var selectedDevice = Pair("", "") // name, MAC
 
-    private var _measurementSeries = MeasurementSeries("Measurement 1", "-", "-", 1, 10)
+    private var _measurementSeries = MeasurementSeries("Measurement 1", "-", "-", 10, 2)
     val measurementSeries: MeasurementSeries
         get() = _measurementSeries
     private val _isMeasuring = MutableLiveData(false)
@@ -71,7 +73,6 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
         val pairedDevices = mBluetoothAdapter.bondedDevices
         for (device in pairedDevices) {
             devices.add(Pair(device.name, device.address))
-            Log.d(TAG, "Device: ${device.name}, address: ${device.address}")
         }
         return devices
     }
@@ -83,9 +84,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
 
         val pairedDevices = mBluetoothAdapter.bondedDevices
         if (pairedDevices.size > 0) {
-            Log.d(TAG, "Devices:")
             for (device in pairedDevices) {
-
                 if (device.address == selectedDevice.second) {
                     Log.d(TAG, "Your device: ${device.name}")
                     mmDevice = device;
@@ -110,8 +109,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
             _isOpen.value = true
             beginListenForData()
         } catch (e: IOException) {
-            Log.d(TAG, "exception: ${e.toString()}")
-            Log.d(TAG, "Could not open bluetooth")
+            Log.d(TAG, "Could not open bluetooth socket")
             _isOpen.value = false
         }
     }
@@ -119,9 +117,20 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
     private fun beginListenForData() {
         stopWorker = false
         viewModelScope.launch(Dispatchers.IO) {
+            var nextCheck = System.currentTimeMillis() + connectionCheckInterval
             while (!stopWorker) {
                 readData()
                 delay(pollingInterval)
+                if (System.currentTimeMillis() > nextCheck) {
+                    nextCheck = System.currentTimeMillis() + connectionCheckInterval
+                    Log.d(TAG, "Checking connection")
+                    try {
+                        mmOutputStream.write(ByteArray(0))
+                    } catch (ex: IOException) {
+                        Log.d(TAG, "Device no longer connected!")
+                        closeBT()
+                    }
+                }
             }
         }
     }
@@ -229,7 +238,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
         mmOutputStream.close()
         mmInputStream.close()
         mmSocket.close()
-        _isOpen.value = false
+        _isOpen.postValue(false)
     }
 
     fun startSeries(series: MeasurementSeries) {
@@ -242,18 +251,19 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
                 while (_isMeasuring.value == true && counter < series.repetitions && _isOpen.value == true) {
                     counter++
                     val time = series.makeMeasurement()
-                    sendData(PacketParser.create_STAT_REQUEST(time))
-                    Log.d(TAG, "Made measurement: $time")
-                    writeToMeasureLog(
-                        "Sent Packet #$counter",
-                        "${series.label} | ECHO_SENT",
-                        time = time
-                    )
-                    if (counter == series.repetitions) break
-                    delay(series.delay * 1000L)
+                    if(sendData(PacketParser.create_STAT_REQUEST(time))) {
+                        Log.d(TAG, "Made measurement: $time")
+                        writeToMeasureLog(
+                            "Sent Packet #$counter",
+                            "${series.label} | ECHO_SENT",
+                            time = time
+                        )
+                        if (counter == series.repetitions) break
+                        delay(series.delay * 1000L)
+                    }
                 }
                 if (_isMeasuring.value == true) {
-                    delay(MAX_RTT/5) // give last packet a bit of time to arrive
+                    delay(MAX_RTT / 5) // give last packet a bit of time to arrive
                     if (!series.allAnswered() && _isOpen.value == true) {
                         Log.d(TAG, "Wait for late packets..., ${series.allAnswered()}")
                         delay(MAX_RTT * 4 / 5) // wait for late packets
@@ -280,15 +290,14 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
 
     fun sendEcho() {
         val time = System.currentTimeMillis()
-        //val time = 0xA1B2C3D4A1B2C3
         val packet = PacketParser.create_STAT_REQUEST(time)
         echoTimes.add(time)
-        sendData(packet)
-        Log.d(TAG, "Made Echo: $time")
-        writeToMeasureLog("", "ECHO_SENT", time = time)
-        Log.d(TAG, packet.toHex())
+        if (sendData(packet)) writeToMeasureLog("", "ECHO_SENT", time = time)
     }
 
+    /**
+     * For debugging
+     */
     private fun ByteArray.toHex(): String =
         joinToString(separator = " ") { eachByte -> "%02x".format(eachByte) }
 

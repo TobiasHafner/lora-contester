@@ -3,17 +3,21 @@ package com.example.lorarangelogger.ui.tabs
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.lorarangelogger.data.MeasurementSeries
 import com.example.lorarangelogger.databinding.FragmentMeasureBinding
 import com.example.lorarangelogger.ui.main.MainViewModel
+import com.example.lorarangelogger.utils.PacketParser
+import java.io.File
 
 
 private const val TAG = "LoRaMeasureFragment"
@@ -51,12 +55,32 @@ class MeasureFragment : Fragment() {
         viewModel.measureLogData.observe(viewLifecycleOwner) { updateLog(it) }
         binding.buttonEcho.setOnClickListener { viewModel.sendEcho() }
         binding.buttonMeasure.setOnClickListener {
-            val inputMethodManager = requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            val inputMethodManager =
+                requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
-            startMeasurement()
+            val label = binding.editTextLabel.text.toString()
+                .replace(";", ",") // can't have ; , since it's the separator in the csv file
+            if (doesLabelExist(label)) {
+                val builder = AlertDialog.Builder(requireContext())
+                builder.setTitle("Confirm Label")
+                builder.setMessage("This label already exists. Are you sure you want to continue?")
+                builder.setPositiveButton("Yes") { _, _ -> startMeasurement(label)}
+                builder.setNegativeButton("Cancel") { _, _ -> }
+                builder.show()
+            } else {
+                startMeasurement(label)
+            }
         }
         binding.buttonCancel.setOnClickListener { viewModel.stopSeries() }
         binding.buttonClearLog.setOnClickListener { viewModel.clearMeasurementLog() }
+
+        binding.textMeasureLabel.setOnLongClickListener { binding.editTextLabel.setText(""); true }
+        binding.textMeasureLocation.setOnLongClickListener { binding.editTextLocation.setText(""); true }
+        binding.textMeasureDescription.setOnLongClickListener {
+            binding.editTextDescription.setText(
+                ""
+            ); true
+        }
 
 
     }
@@ -75,9 +99,7 @@ class MeasureFragment : Fragment() {
         binding.editTextDelay.setText(series.delay.toString())
     }
 
-    private fun startMeasurement() {
-        val label = binding.editTextLabel.text.toString()
-            .replace(";", ",") // can't have ; , since it's the separator in the csv file
+    private fun startMeasurement(label: String) {
         val location = binding.editTextLocation.text.toString().replace(";", ",")
         val description = binding.editTextDescription.text.toString().replace(";", ",")
         val repetitionsStr = binding.editTextRepetitions.text.toString()
@@ -109,5 +131,23 @@ class MeasureFragment : Fragment() {
     private fun updateLog(list: List<String>) {
         binding.buttonClearLog.isEnabled = list.isNotEmpty()
         binding.textMeasureLog.text = list.joinToString("\n\n")
+    }
+
+    private fun doesLabelExist(label: String) : Boolean {
+        try {
+            if (File(requireActivity().filesDir, viewModel.fileName).exists()) {
+                val reader = requireActivity().openFileInput(viewModel.fileName).bufferedReader()
+                val lines = reader.use {
+                    it.readLines()
+                }
+                for (line in lines ){
+                    val data = line.split(";")
+                    if (data.size == 12 && data[0] == label) return true
+                }
+            }
+        } catch (e: Exception) {
+            Log.d(TAG, "An exception while reading the file occured.")
+        }
+        return false
     }
 }

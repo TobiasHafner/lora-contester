@@ -56,10 +56,9 @@ class ConfigFragment : Fragment() {
             builder.setTitle("Confirm config change")
             builder.setMessage("Do you really want to set the Spreading Factor to $sfValue?")
             builder.setPositiveButton("Yes") { _, _ ->
-                Log.d(TAG, "Yes!")
                 viewModel.sendData(PacketParser.create_SF_SET(sfValue.toByte()))
             }
-            builder.setNegativeButton("Cancel") { _, _ -> Log.d(TAG, "No!") }
+            builder.setNegativeButton("Cancel") { _, _ -> }
             builder.show()
         }
 
@@ -84,14 +83,13 @@ class ConfigFragment : Fragment() {
             } else builder.setMessage("Do you really want to set the Transmission Power to $txValue?")
 
             builder.setPositiveButton("Yes") { _, _ ->
-                Log.d(TAG, "Yes!")
                 viewModel.sendData(
                     PacketParser.create_TX_SET(
                         txValue.substringBefore(" ").toByte()
                     )
                 )
             }
-            builder.setNegativeButton("Cancel") { _, _ -> Log.d(TAG, "No!") }
+            builder.setNegativeButton("Cancel") { _, _ -> }
             builder.show()
         }
 
@@ -110,14 +108,13 @@ class ConfigFragment : Fragment() {
             builder.setTitle("Confirm config change")
             builder.setMessage("Do you really want to set the Bandwidth to $bwValue?")
             builder.setPositiveButton("Yes") { _, _ ->
-                Log.d(TAG, "Yes!")
                 viewModel.sendData(
                     PacketParser.create_BW_SET(
                         bwValue.replace("'", " ").substringBefore(" ").toInt()
                     )
                 )
             }
-            builder.setNegativeButton("Cancel") { _, _ -> Log.d(TAG, "No!") }
+            builder.setNegativeButton("Cancel") { _, _ -> }
             builder.show()
         }
     }
