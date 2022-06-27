@@ -61,16 +61,17 @@ object PacketParser {
      */
     fun parsePacket(packet: ByteArray, rcvTime: Long) : LoraData? {
         if (packet[0] == MESSAGE_ID) {
+            Log.d("LoRa", "Inside parsePacket")
             return createLoraMsgData(packet, rcvTime)
         }
         if (packet[0] != CONTROL_ID) {
             return null;
         }
         if (packet[1] == STAT_SEND) {
-            if (packet.size == 18) {
+            if (packet.size == 13) {
                 return createLoraStatReqData(packet, rcvTime)
             }
-            if (packet.size != 26) {
+            if (packet.size != 16) {
             return null
             }
             return createLoraStatSendData(packet, rcvTime)
@@ -79,42 +80,41 @@ object PacketParser {
     }
 
     fun createLoraMsgData(packet: ByteArray, rcvTime: Long): LoraMsgData? {
-        if (packet.size < 10) {
+        if (packet.size < 4) {
             return null
         }
         
-        val rssi = bigEndianIntConversion(packet.copyOfRange(1, 5))
-        val snr = bigEndianIntConversion(packet.copyOfRange(5, 9))
-        val message = String(packet.copyOfRange(9, packet.size))
+        val rssi = bigEndianShortConversion(packet.copyOfRange(1,3))
+        val snr = packet[3]
+        val message = String(packet.copyOfRange(4, packet.size))
 
-        return LoraMsgData(rcvTime,rssi,snr,message)
+        return LoraMsgData(rcvTime,rssi.toInt(),snr.toInt(),message)
     }
 
     fun createLoraStatReqData(packet: ByteArray, rcvTime: Long): LoraStatReqData?{
         //rcv time long, rssi int, snr int, send time long
         val sendTime = bigEndianLongConversion(packet.copyOfRange(2, 10))
-        val rssi = bigEndianIntConversion(packet.copyOfRange(10, 14))
-        val snr = bigEndianIntConversion(packet.copyOfRange(14, 18))
+        val rssi = bigEndianShortConversion(packet.copyOfRange(10,12))
+        val snr = packet[12].toInt()
             
         return LoraStatReqData(rcvTime, rssi, snr, sendTime)
     }
 
     fun createLoraStatSendData(packet: ByteArray, rcvTime: Long): LoraStatSendData? {
         val sendTime = bigEndianLongConversion(packet.copyOfRange(2, 10))
-        val sRssi = bigEndianIntConversion(packet.copyOfRange(10, 14))
-        val sSnr = bigEndianIntConversion(packet.copyOfRange(14, 18))
-        val rRssi = bigEndianIntConversion(packet.copyOfRange(18, 22))
-        val rSnr = bigEndianIntConversion(packet.copyOfRange(22, 26))
+        val sRssi = bigEndianShortConversion(packet.copyOfRange(10,12))
+        val sSnr = packet[12].toInt()
+        val rRssi = bigEndianShortConversion(packet.copyOfRange(13,15))
+        val rSnr = packet[15].toInt()
 
         return LoraStatSendData(rcvTime,rRssi,rSnr,sRssi,sSnr,sendTime)
     }
 
-    fun bigEndianIntConversion(bytes: ByteArray): Int {
-        var result = 0
-        for (b in bytes) {
-            result = ((result shl 8) + b.toUByte().toInt())
-        }
-        return result
+    fun bigEndianShortConversion(bytes: ByteArray): Int {
+        var result: Short = 0
+        val twofiftysix: Short = 256
+        return ((bytes[0].toUByte().toShort() * twofiftysix).toShort() + bytes[1].toUByte().toShort())
+
     }
 
     fun bigEndianLongConversion(bytes: ByteArray): Long {
