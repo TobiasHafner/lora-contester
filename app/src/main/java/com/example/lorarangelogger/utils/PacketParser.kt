@@ -61,6 +61,7 @@ object PacketParser {
      */
     fun parsePacket(packet: ByteArray, rcvTime: Long) : LoraData? {
         if (packet[0] == MESSAGE_ID) {
+            Log.d("LoRa", "Inside parsePacket")
             return createLoraMsgData(packet, rcvTime)
         }
         if (packet[0] != CONTROL_ID) {

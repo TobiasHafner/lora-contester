@@ -248,6 +248,7 @@ void send_transmission_info(unsigned char *buf, short buf_len) {
 
   short len = buf_len + 3;
   unsigned char message[len];
+  
   int i = 0;
   message[i++] = CONTROL_ID;
   message[i++] = STAT_SEND;
@@ -302,7 +303,6 @@ void forward_message(unsigned char *buf, short buf_len, short interface) {
   message[i++] = rssi & 0xFF;
   message[i++] = snr;
 
-  // copy received message to new message
   for (int j = 1; j < buf_len; j++) {
     message[i++] = buf[j];
   }
@@ -377,7 +377,7 @@ void parse_command(unsigned char *buf, short len, short interface) {
         return;
       }
       // from LoRa -> complete info and forward
-      forward_transmission_info(buf, len, interface);//////////////////////////////////////////////////////////////////////////////
+      forward_transmission_info(buf, len, interface);
       return;
   }
 }
