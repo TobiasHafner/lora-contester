@@ -15,7 +15,7 @@
 #define BTname    "tinyssb-bridge-2"
 
 #define LORA_FREQ  867500000L
-#define COOLDOWN_TIME 10
+#define COOLDOWN_TIME 50
 // #define LORA_FREQ  868000000L
 
 #define CONTROL_ID 0x99 //0b10011001
@@ -43,8 +43,8 @@ IPAddress myIP;
 int udp_sock = -1;
 struct sockaddr_in udp_addr; // wifi peer
 unsigned int udp_addr_len;
-short tx_pwr = 14, sp_fac = 7, ap_client_cnt, err_cnt;
-int bw = 250000;
+short tx_pwr = 14, sp_fac = 8, ap_client_cnt, err_cnt;
+int bw = 125000;
 short lora_cnt, udp_cnt, bt_cnt, serial_cnt;
 char wheel[] = "/-\\|";
 
@@ -88,8 +88,8 @@ int kiss_read(Stream &s, struct kiss_buf *kp) {
   
   while (s.available()) {
     short c = s.read();
-    Serial.print(c, HEX);
-    Serial.print(" ");
+    //Serial.print(c, HEX);
+    //Serial.print(" ");
     if (c == KISS_FEND) {
       kp->esc = 0;
       short sz = 0;
@@ -144,7 +144,7 @@ void ShowCounters(){
   Heltec.display->setColor(WHITE); 
 
   str = String(tx_pwr, DEC);   Heltec.display->drawString(38, 4, "TX."+ str);
-  str = String(sp_fac, DEC);    Heltec.display->drawString(82, 4, "SP."+ str);
+  str = String(sp_fac, DEC);    Heltec.display->drawString(82, 4, "SF."+ str);
   str = String(bw/1000, DEC);     Heltec.display->drawString(38, 14, "BW."+ str + "k");
 
   str = String(lora_cnt, DEC);   Heltec.display->drawString(38, 24, "L."+ str);
@@ -442,7 +442,7 @@ void loop() {
   uint8_t pkt_buf[250];
   int pkt_len;
   short change = 0;
-  
+
   pkt_len = LoRa.parsePacket();
   if (pkt_len > 0) {
     change = 1;

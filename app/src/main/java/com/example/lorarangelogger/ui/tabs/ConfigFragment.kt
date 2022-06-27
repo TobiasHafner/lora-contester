@@ -48,7 +48,7 @@ class ConfigFragment : Fragment() {
         ).also { adapter ->
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.spinnerConfigSf.adapter = adapter
-            binding.spinnerConfigSf.setSelection(0)
+            binding.spinnerConfigSf.setSelection(1)
         }
         binding.buttonConfigSf.setOnClickListener {
             val sfValue = binding.spinnerConfigSf.selectedItem as String

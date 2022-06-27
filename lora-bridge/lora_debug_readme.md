@@ -15,7 +15,7 @@ The default control flag is 0b10011001 or 0x99 in hexadecimal notation.
 ### SF_SET
 The spreading factor set *(SF_SET)* feature allows to set the bridges spreading factor remotely by sending the following message.  
 **| 10011001 | 10000001 | 8 bit spread_fact (byte) |**  
-Thereby the 8 bit long spread_fact is the desired spread facor binary representation. Allowed are values between 7 (default) and 12.
+Thereby the 8 bit long spread_fact is the desired spread facor binary representation. Allowed are values between 7 and 12 (default: 8).
 
 ### TX_SET
 The transmission power set *(TX_SET)* feature allows to set the bridges LoRa signal strength remotely by sending the following message.  

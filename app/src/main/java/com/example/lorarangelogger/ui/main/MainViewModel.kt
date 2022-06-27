@@ -26,7 +26,7 @@ import java.util.*
 
 
 private const val TAG = "LoRaViewModel"
-private const val MAX_RTT = 5000L // time to wait in ms for the last packet to arrive
+private const val MAX_RTT = 6000L // time to wait in ms for the last packet to arrive
 private const val connectionCheckInterval = 30_000L //interval for checking if bt is still connected
 
 class MainViewModel(private val context: Application) : AndroidViewModel(context) {
