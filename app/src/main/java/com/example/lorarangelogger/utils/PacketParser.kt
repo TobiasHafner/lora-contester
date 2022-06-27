@@ -6,6 +6,7 @@ import com.example.lorarangelogger.data.LoraMsgData
 import com.example.lorarangelogger.data.LoraStatReqData
 import com.example.lorarangelogger.data.LoraStatSendData
 
+private const val TAG = "LoRaPacketParser"
 object PacketParser {
     val CONTROL_ID = 0x99.toByte() //0b10011001
     val MESSAGE_ID = 0x66.toByte() //0b01100110
@@ -35,8 +36,10 @@ object PacketParser {
         val message = mutableListOf<Byte>()
         message.add(CONTROL_ID)
         message.add(BW_SET)
-        for (i in 0..3) message.add((bw shr (i*8)).toByte())
-        return message.toByteArray()
+        Log.d(TAG, "BW: $bw")
+        val intAsBytes = mutableListOf<Byte>()
+        for (i in 0..3) intAsBytes.add((bw shr (i*8)).toByte())
+        return message.toByteArray() + intAsBytes.reversed().toByteArray()
     }
 
     fun create_STAT_REQUEST(requestId: Long) : ByteArray{

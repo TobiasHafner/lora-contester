@@ -110,7 +110,7 @@ class ConfigFragment : Fragment() {
             builder.setPositiveButton("Yes") { _, _ ->
                 viewModel.sendData(
                     PacketParser.create_BW_SET(
-                        bwValue.replace("'", " ").substringBefore(" ").toInt()
+                        bwValue.replace("'", "").substringBefore(" ").toInt()
                     )
                 )
             }
