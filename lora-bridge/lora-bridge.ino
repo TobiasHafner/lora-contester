@@ -121,7 +121,7 @@ void ShowIP() {
   Heltec.display->fillRect(0, 42, DISPLAY_WIDTH, DISPLAY_HEIGHT-42);
   Heltec.display->setColor(WHITE); 
   
-  Heltec.display->drawString(0, 43, "AP=" + myIP.toString() + "/" + String(UDP_PORT));
+  //Heltec.display->drawString(0, 43, "AP=" + myIP.toString() + "/" + String(UDP_PORT));
   String str = IPAddress(udp_addr.sin_addr.s_addr).toString() + "/" + String(ntohs(udp_addr.sin_port));
   Heltec.display->drawString(0, 53, str);
 }
@@ -131,33 +131,26 @@ void ShowWheels() {
   Heltec.display->fillRect(DISPLAY_WIDTH-10, DISPLAY_HEIGHT-40, 10, 40);
   Heltec.display->setColor(WHITE);
   String str = " ";
-  str[0] = wheel[lora_cnt % 4];   Heltec.display->drawString(DISPLAY_WIDTH-10, 22, str);
-  str[0] = wheel[udp_cnt % 4];    Heltec.display->drawString(DISPLAY_WIDTH-10, 32, str);
-  str[0] = wheel[bt_cnt % 4];     Heltec.display->drawString(DISPLAY_WIDTH-10, 42, str);
-  str[0] = wheel[serial_cnt % 4]; Heltec.display->drawString(DISPLAY_WIDTH-10, 52, str);
+  str[0] = wheel[lora_cnt % 4];   Heltec.display->drawString(DISPLAY_WIDTH-10, 24, str);
+  str[0] = wheel[udp_cnt % 4];    Heltec.display->drawString(DISPLAY_WIDTH-10, 34, str);
+  str[0] = wheel[bt_cnt % 4];     Heltec.display->drawString(DISPLAY_WIDTH-10, 44, str);
+  str[0] = wheel[serial_cnt % 4]; Heltec.display->drawString(DISPLAY_WIDTH-10, 54, str);
 }
 
 void ShowCounters(){
   String str;
   Heltec.display->setColor(BLACK); 
-  Heltec.display->fillRect(38, 20, DISPLAY_WIDTH-38, 22);
+  Heltec.display->fillRect(38, 0, DISPLAY_WIDTH-38, 42);
   Heltec.display->setColor(WHITE); 
 
-  str = String(lora_cnt, DEC);   Heltec.display->drawString(38, 20, "L."+ str);
-  str = String(udp_cnt, DEC);    Heltec.display->drawString(38, 30, "U."+ str);
-  str = String(bt_cnt, DEC);     Heltec.display->drawString(82, 20, "B."+ str);
-  str = String(serial_cnt, DEC); Heltec.display->drawString(82, 30, "S." + str);
-}
+  str = String(tx_pwr, DEC);   Heltec.display->drawString(38, 4, "TX."+ str);
+  str = String(sp_fac, DEC);    Heltec.display->drawString(82, 4, "SP."+ str);
+  str = String(bw/1000, DEC);     Heltec.display->drawString(38, 14, "BW."+ str + "k");
 
-void ShowDebug() {
-  String str;
-  Heltec.display->setColor(BLACK); 
-  Heltec.display->fillRect(38, 20, DISPLAY_WIDTH-38, 22);
-  Heltec.display->setColor(WHITE); 
-
-  str = String(tx_pwr, DEC);   Heltec.display->drawString(38, 20, "TX."+ str);
-  str = String(sp_fac, DEC);    Heltec.display->drawString(38, 30, "SP."+ str);
-  str = String(bw, DEC);     Heltec.display->drawString(82, 20, "BW."+ str);
+  str = String(lora_cnt, DEC);   Heltec.display->drawString(38, 24, "L."+ str);
+  str = String(udp_cnt, DEC);    Heltec.display->drawString(38, 34, "U."+ str);
+  str = String(bt_cnt, DEC);     Heltec.display->drawString(82, 24, "B."+ str);
+  str = String(serial_cnt, DEC); Heltec.display->drawString(82, 34, "S." + str);
 }
 
 void send_udp(unsigned char *buf, short len) {
