@@ -9,7 +9,7 @@ class LoraMsgData(
     LoraData {
     override val type = "MSG"
     override fun summary(): String {
-        return "${headerSummary()}:    $msg"
+        return "RSSI: $rssi    SNR: $snr    MSG: $msg"
     }
 
 }

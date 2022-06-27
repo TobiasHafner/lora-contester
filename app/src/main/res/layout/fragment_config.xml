@@ -92,7 +92,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:text="The values displayed do not correspond to the actual values set on the device."
+            android:text="The values displayed do not correspond to the actual values set on the device.\n\nHigher SF and TX Power and smaller BW increase range.\nThe maximum TX Power allowed in Europe is 14 dBm."
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"

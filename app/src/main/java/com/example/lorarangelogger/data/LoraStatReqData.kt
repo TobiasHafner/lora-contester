@@ -15,6 +15,6 @@ class LoraStatReqData(
     override val type = "ECHO_REQUEST"
 
     override fun summary(): String {
-        return "${headerSummary()}:    Sender Time: ${TimeHelper.getTime(sendTime)}, Transmission Time: $transmissionTime"
+        return "RSSI: $rssi    SNR: $snr    ~Transm. T: ${TimeHelper.getPreciseDuration(transmissionTime)}"
     }
 }

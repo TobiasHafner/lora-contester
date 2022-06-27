@@ -17,6 +17,7 @@ import com.example.lorarangelogger.utils.PacketParser
 
 
 private const val TAG = "LoRaConfigFragment"
+
 class ConfigFragment : Fragment() {
     private var _binding: FragmentConfigBinding? = null
     private val binding get() = _binding!!
@@ -45,9 +46,7 @@ class ConfigFragment : Fragment() {
             R.array.sf_array,
             android.R.layout.simple_spinner_item
         ).also { adapter ->
-            // Specify the layout to use when the list of choices appears
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            // Apply the adapter to the spinner
             binding.spinnerConfigSf.adapter = adapter
             binding.spinnerConfigSf.setSelection(0)
         }
@@ -57,10 +56,9 @@ class ConfigFragment : Fragment() {
             builder.setTitle("Confirm config change")
             builder.setMessage("Do you really want to set the Spreading Factor to $sfValue?")
             builder.setPositiveButton("Yes") { _, _ ->
-                Log.d(TAG, "Yes!")
                 viewModel.sendData(PacketParser.create_SF_SET(sfValue.toByte()))
             }
-            builder.setNegativeButton("Cancel") { _, _ -> Log.d(TAG, "No!")}
+            builder.setNegativeButton("Cancel") { _, _ -> }
             builder.show()
         }
 
@@ -69,22 +67,29 @@ class ConfigFragment : Fragment() {
             R.array.tx_array,
             android.R.layout.simple_spinner_item
         ).also { adapter ->
-            // Specify the layout to use when the list of choices appears
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            // Apply the adapter to the spinner
             binding.spinnerConfigTx.adapter = adapter
-            binding.spinnerConfigTx.setSelection(0)
+            binding.spinnerConfigTx.setSelection(12)
         }
         binding.buttonConfigTx.setOnClickListener {
             val txValue = binding.spinnerConfigTx.selectedItem as String
             val builder = AlertDialog.Builder(requireContext())
             builder.setTitle("Confirm config change")
-            builder.setMessage("Do you really want to set the Transmission Strength to $txValue dB?")
+            if (txValue.substringBefore(" ").toInt() > 14) {
+                builder.setMessage(
+                    "Do you really want to set the Transmission Power to $txValue? " +
+                            "(>14 dBm is illegal in Europe!)"
+                )
+            } else builder.setMessage("Do you really want to set the Transmission Power to $txValue?")
+
             builder.setPositiveButton("Yes") { _, _ ->
-                Log.d(TAG, "Yes!")
-                viewModel.sendData(PacketParser.create_TX_SET(txValue.toByte()))
+                viewModel.sendData(
+                    PacketParser.create_TX_SET(
+                        txValue.substringBefore(" ").toByte()
+                    )
+                )
             }
-            builder.setNegativeButton("Cancel") { _, _ -> Log.d(TAG, "No!")}
+            builder.setNegativeButton("Cancel") { _, _ -> }
             builder.show()
         }
 
@@ -93,22 +98,23 @@ class ConfigFragment : Fragment() {
             R.array.bw_array,
             android.R.layout.simple_spinner_item
         ).also { adapter ->
-            // Specify the layout to use when the list of choices appears
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            // Apply the adapter to the spinner
             binding.spinnerConfigBw.adapter = adapter
-            binding.spinnerConfigBw.setSelection(0)
+            binding.spinnerConfigBw.setSelection(7)
         }
         binding.buttonConfigBw.setOnClickListener {
-            val txValue = binding.spinnerConfigBw.selectedItem as String
+            val bwValue = binding.spinnerConfigBw.selectedItem as String
             val builder = AlertDialog.Builder(requireContext())
             builder.setTitle("Confirm config change")
-            builder.setMessage("Do you really want to set the Bandwidth to $txValue Hz?")
+            builder.setMessage("Do you really want to set the Bandwidth to $bwValue?")
             builder.setPositiveButton("Yes") { _, _ ->
-                Log.d(TAG, "Yes!")
-                //viewModel.sendData(PacketParser.create_BW_SET(txValue.toByte()))
+                viewModel.sendData(
+                    PacketParser.create_BW_SET(
+                        bwValue.replace("'", " ").substringBefore(" ").toInt()
+                    )
+                )
             }
-            builder.setNegativeButton("Cancel") { _, _ -> Log.d(TAG, "No!")}
+            builder.setNegativeButton("Cancel") { _, _ -> }
             builder.show()
         }
     }

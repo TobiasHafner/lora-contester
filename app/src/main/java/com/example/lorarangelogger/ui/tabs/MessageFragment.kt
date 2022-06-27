@@ -55,11 +55,13 @@ class MessageFragment : Fragment() {
                 "Your message is ${msg.length - MAX_MSG_LENGTH} character(s) too long!",
                 Toast.LENGTH_SHORT
             ).show()
-            else viewModel.sendData(msg)
+            else if (viewModel.sendData(msg)) binding.editTextSnd.setText("")
         }
+
+        binding.buttonClearMsg.setOnClickListener { viewModel.clearMessageLog() }
     }
 
     private fun updateList(list: List<String>) {
-        binding.textMsgLog.text = list.joinToString("\n")
+        binding.textMsgLog.text = list.joinToString("\n\n")
     }
 }

@@ -15,6 +15,6 @@ class LoraStatSendData(
     override val type = "ECHO_ANSWER"
 
     override fun summary(): String {
-        return "${headerSummary()}:    ($sendRssi | $sendSnr) RTT: ${TimeHelper.getPreciseDuration(rtt)}"
+        return "RSSI: ($sendRssi | $rssi)    SNR: ($sendSnr | $snr)    RTT: ${TimeHelper.getPreciseDuration(rtt)}"
     }
 }
