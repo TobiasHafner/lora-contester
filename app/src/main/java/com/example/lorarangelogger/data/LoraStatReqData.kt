@@ -6,7 +6,7 @@ class LoraStatReqData(
     override val rcvTime: Long,
     override val rssi: Int,
     override val snr: Int,
-    val sendTime: Long
+    sendTime: Long
 ) : LoraData {
     /**
      * Only approximate, since the clocks of sender and receiver are not synchronized!

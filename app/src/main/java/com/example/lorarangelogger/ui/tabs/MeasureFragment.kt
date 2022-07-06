@@ -1,7 +1,6 @@
 package com.example.lorarangelogger.ui.tabs
 
 import android.app.Activity
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,13 +9,11 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.lorarangelogger.data.MeasurementSeries
 import com.example.lorarangelogger.databinding.FragmentMeasureBinding
 import com.example.lorarangelogger.ui.main.MainViewModel
-import com.example.lorarangelogger.utils.PacketParser
 import java.io.File
 
 
@@ -146,7 +143,7 @@ class MeasureFragment : Fragment() {
                 }
             }
         } catch (e: Exception) {
-            Log.d(TAG, "An exception while reading the file occured.")
+            Log.d(TAG, "An exception while reading the file occurred.")
         }
         return false
     }

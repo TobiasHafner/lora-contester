@@ -8,9 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
-import com.example.lorarangelogger.data.LoraData
 import com.example.lorarangelogger.databinding.FragmentMessageBinding
-import com.example.lorarangelogger.databinding.FragmentSetupBinding
 import com.example.lorarangelogger.ui.main.MainViewModel
 
 private const val TAG = "LoRaMessageFragment"

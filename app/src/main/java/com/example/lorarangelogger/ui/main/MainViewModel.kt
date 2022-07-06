@@ -148,7 +148,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
                 }
             }
         } catch (ex: IOException) {
-            Log.d(TAG, "Some exception occured!")
+            Log.d(TAG, "Some exception occurred!")
         }
     }
 
@@ -209,12 +209,12 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
      */
     fun sendData(msg: String): Boolean {
         return try {
-            mmOutputStream.write(KissTranslator.makeFrame(PacketParser.create_MSG(msg)))
+            mmOutputStream.write(KissTranslator.makeFrame(PacketParser.createMSG(msg)))
             Log.d(TAG, "Message sent")
             writeToMsgLog(msg, "MSG_SENT")
             true
         } catch (e: IOException) {
-            Log.d(TAG, "Message couldn't be sent, some exception occured")
+            Log.d(TAG, "Message couldn't be sent, some exception occurred")
             closeBT()
             false
         }
@@ -226,7 +226,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
             Log.d(TAG, "Message sent")
             true
         } catch (e: IOException) {
-            Log.d(TAG, "Message couldn't be sent, some exception occured")
+            Log.d(TAG, "Message couldn't be sent, some exception occurred")
             closeBT()
             false
         }
@@ -251,7 +251,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
                 while (_isMeasuring.value == true && counter < series.repetitions && _isOpen.value == true) {
                     counter++
                     val time = series.makeMeasurement()
-                    if (sendData(PacketParser.create_STAT_REQUEST(time))) {
+                    if (sendData(PacketParser.createSTATREQUEST(time))) {
                         Log.d(TAG, "Made measurement: $time")
                         writeToMeasureLog(
                             "Sent Packet #$counter",
@@ -290,7 +290,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
 
     fun sendEcho() {
         val time = System.currentTimeMillis()
-        val packet = PacketParser.create_STAT_REQUEST(time)
+        val packet = PacketParser.createSTATREQUEST(time)
         echoTimes.add(time)
         if (sendData(packet)) writeToMeasureLog("", "ECHO_SENT", time = time)
     }
@@ -339,7 +339,7 @@ class MainViewModel(private val context: Application) : AndroidViewModel(context
         _measureLogData.value = measureLog
     }
 
-    fun saveSeries() {
+    private fun saveSeries() {
         context.openFileOutput(fileName, Context.MODE_PRIVATE or Context.MODE_APPEND).use {
             val line = _measurementSeries.getCsv() + "\n"
             it.write(line.toByteArray())

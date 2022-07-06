@@ -28,10 +28,7 @@ import androidx.fragment.app.activityViewModels
 import com.example.lorarangelogger.R
 import com.example.lorarangelogger.databinding.FragmentSetupBinding
 import com.example.lorarangelogger.ui.main.MainViewModel
-import com.example.lorarangelogger.utils.PacketParser
 import java.io.File
-import java.io.IOException
-import java.lang.StringBuilder
 import java.util.*
 
 
@@ -147,7 +144,7 @@ class SetupFragment : Fragment() {
             val idx = arr.indexOf(viewModel.pollingInterval.toString() + " ms")
             binding.spinnerPoll.setSelection(idx)
         }
-        binding.spinnerPoll.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+        binding.spinnerPoll.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parentView: AdapterView<*>?,
                 selectedItemView: View?,
@@ -160,7 +157,7 @@ class SetupFragment : Fragment() {
             }
 
             override fun onNothingSelected(parentView: AdapterView<*>?) {}
-        })
+        }
 
     }
 
@@ -248,18 +245,18 @@ class SetupFragment : Fragment() {
                 }
             }
         } catch (e: Exception) {
-            Log.d(TAG, "An exception while reading the file occured.")
+            Log.d(TAG, "An exception while reading the file occurred.")
         }
         setMeasurementsText(measurements.toSortedMap())
     }
 
     /**
      * Takes a map with label + location of a measurement series as key
-     * and an array cotaining
+     * and an array containing
      * # of sent packets, # of received packets, sum of send rssi, sum of send snr
      * sum of receive rssi, sum of receive snr
      * as value.
-     * The avereage values are calculated here
+     * The average values are calculated here
      */
     private fun setMeasurementsText(m: SortedMap<String, Array<Int>>) {
         val ssb = SpannableStringBuilder()
@@ -290,8 +287,8 @@ class SetupFragment : Fragment() {
                 )
             val intent = Intent()
             intent.action = Intent.ACTION_SEND
-            intent.type = "text/plain";
-            intent.putExtra(Intent.EXTRA_STREAM, uri);
+            intent.type = "text/plain"
+            intent.putExtra(Intent.EXTRA_STREAM, uri)
 
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             startActivity(intent)

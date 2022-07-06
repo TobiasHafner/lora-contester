@@ -25,14 +25,14 @@ data class MeasurementSeries(
     }
 
     fun handleAnswer(data: LoraStatSendData): Boolean {
-        try {
+        return try {
             val m = _measurements.first { !it.hasAnswered && it.sendTime == data.sendTime }
             m.answer(data)
             _numAnswered++
-            return true
+            true
         } catch (e: NoSuchElementException) {
             // couldn't find measurement
-            return false
+            false
         }
     }
 

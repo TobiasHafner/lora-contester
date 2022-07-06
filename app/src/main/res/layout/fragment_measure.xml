@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
-            android:text="Delay (Seconds):"
+            android:text="@string/measure_delay"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/edit_text_delay" />
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
-            android:text="# of Packets:"
+            android:text="@string/measure_nr_of_packets"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/edit_text_repetitions" />
@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
-            android:text="Location:"
+            android:text="@string/measure_location"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/edit_text_location" />
@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
-            android:text="Description:"
+            android:text="@string/measure_description"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/edit_text_description" />
@@ -61,7 +61,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
-            android:text="Label:"
+            android:text="@string/measure_label"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/edit_text_label" />
@@ -71,11 +71,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="16dp"
-            android:text="Measurement Log:"
+            android:layout_marginTop="8dp"
+            android:text="@string/measure_measurement_log"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button_measure" />
+            app:layout_constraintTop_toTopOf="@+id/button_clear_log" />
 
         <TextView
             android:id="@+id/text_measure_log"
@@ -104,10 +104,12 @@
             android:imeOptions="actionDone"
             android:inputType="textPersonName"
             android:minHeight="48dp"
-            android:text="Measurement 1"
+            android:text="@string/measure_measurement_1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/text_measure_label"
-            app:layout_constraintTop_toBottomOf="@+id/text_measure_title" />
+            app:layout_constraintTop_toBottomOf="@+id/text_measure_title"
+            android:importantForAutofill="no"
+            tools:ignore="LabelFor" />
 
         <EditText
             android:id="@+id/edit_text_description"
@@ -122,7 +124,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/edit_text_label"
             app:layout_constraintTop_toBottomOf="@+id/edit_text_location"
-            tools:ignore="SpeakableTextPresentCheck" />
+            tools:ignore="LabelFor,SpeakableTextPresentCheck"
+            android:importantForAutofill="no" />
 
         <EditText
             android:id="@+id/edit_text_location"
@@ -137,7 +140,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/edit_text_label"
             app:layout_constraintTop_toBottomOf="@+id/edit_text_label"
-            tools:ignore="SpeakableTextPresentCheck" />
+            tools:ignore="LabelFor,SpeakableTextPresentCheck"
+            android:importantForAutofill="no" />
 
         <EditText
             android:id="@+id/edit_text_repetitions"
@@ -149,10 +153,12 @@
             android:imeOptions="actionDone"
             android:inputType="number"
             android:minHeight="48dp"
-            android:text="1"
+            android:text="@string/measure_packets_default"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/edit_text_description"
-            app:layout_constraintTop_toBottomOf="@+id/edit_text_description" />
+            app:layout_constraintTop_toBottomOf="@+id/edit_text_description"
+            android:importantForAutofill="no"
+            tools:ignore="LabelFor" />
 
         <EditText
             android:id="@+id/edit_text_delay"
@@ -167,7 +173,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/edit_text_repetitions"
             app:layout_constraintTop_toBottomOf="@+id/edit_text_repetitions"
-            tools:ignore="SpeakableTextPresentCheck" />
+            tools:ignore="LabelFor,SpeakableTextPresentCheck"
+            android:importantForAutofill="no" />
 
         <Button
             android:id="@+id/button_measure"
@@ -175,7 +182,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
-            android:text="Start Measurement"
+            android:text="@string/measure_start_measurement"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/edit_text_delay" />
 
@@ -184,7 +191,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Send Echo"
+            android:text="@string/measure_send_echo"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -207,7 +214,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:text="Create Measurement Series:"
+            android:text="@string/measure_create_measurement_series"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/divider2" />
@@ -217,7 +224,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:text="End"
+            android:text="@string/measure_end"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/button_measure" />
 
@@ -225,9 +232,10 @@
             android:id="@+id/button_clear_log"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
-            android:text="Clear Log"
+            android:text="@string/measure_clear_log"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/textView9" />
+            app:layout_constraintTop_toBottomOf="@+id/button_measure" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

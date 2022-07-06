@@ -1,5 +1,35 @@
 <resources>
-    <string name="app_name">Lora Range Logger</string>
+    <string name="app_name">LoRa Range Logger</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="measure_nr_of_packets"># of Packets:</string>
+    <string name="measure_start_measurement">Start Measurement</string>
+    <string name="measure_send_echo">Send Echo</string>
+    <string name="measure_packets_default">1</string>
+    <string name="measure_create_measurement_series">Create Measurement Series:</string>
+    <string name="measure_end">End</string>
+    <string name="measure_measurement_1">Measurement 1</string>
+    <string name="measure_label">Label:</string>
+    <string name="measure_clear_log">Clear Log</string>
+    <string name="measure_measurement_log">Measurement Log:</string>
+    <string name="measure_location">Location:</string>
+    <string name="measure_delay">Delay (Seconds):</string>
+    <string name="measure_description">Description:</string>
+    <string name="setup_choose_device">Choose Device</string>
+    <string name="setup_device">Device:</string>
+    <string name="setup_connect">Connect</string>
+    <string name="setup_disconnect">Disconnect</string>
+    <string name="setup_polling_interval">Set Polling Interval:</string>
+    <string name="setup_export">Export Measurements</string>
+    <string name="setup_delete_measurements">Delete Measurements</string>
+    <string name="setup_stored_measurements">Stored Measurements:</string>
+    <string name="setup_update">Update</string>
+    <string name="message_send">Send</string>
+    <string name="message_log">Message Log:</string>
+    <string name="message_clear_log">Clear Log</string>
+    <string name="config_configure">Configure LoRa Bridge Parameters</string>
+    <string name="config_spreading_factor">Spreading Factor</string>
+    <string name="config_tx">Transmission Power</string>
+    <string name="config_bw">Bandwidth</string>
+    <string name="config_info">The values displayed do not correspond to the actual values set on the device.\n\nHigher SF and TX Power and smaller BW increase range.\nThe maximum TX Power allowed in Europe is 14 dBm.</string>
 </resources>

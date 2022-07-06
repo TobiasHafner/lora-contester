@@ -1,6 +1,5 @@
 package com.example.lorarangelogger.data
 
-import com.example.lorarangelogger.utils.TimeHelper
 
 /**
  * Represents a single packet received from the bridge.

@@ -1,8 +1,6 @@
 package com.example.lorarangelogger.ui.tabs
 
-import android.content.DialogInterface
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,8 +14,7 @@ import com.example.lorarangelogger.ui.main.MainViewModel
 import com.example.lorarangelogger.utils.PacketParser
 
 
-private const val TAG = "LoRaConfigFragment"
-
+//private const val TAG = "LoRaConfigFragment"
 class ConfigFragment : Fragment() {
     private var _binding: FragmentConfigBinding? = null
     private val binding get() = _binding!!
@@ -56,7 +53,7 @@ class ConfigFragment : Fragment() {
             builder.setTitle("Confirm config change")
             builder.setMessage("Do you really want to set the Spreading Factor to $sfValue?")
             builder.setPositiveButton("Yes") { _, _ ->
-                viewModel.sendData(PacketParser.create_SF_SET(sfValue.toByte()))
+                viewModel.sendData(PacketParser.createSFSET(sfValue.toByte()))
             }
             builder.setNegativeButton("Cancel") { _, _ -> }
             builder.show()
@@ -84,7 +81,7 @@ class ConfigFragment : Fragment() {
 
             builder.setPositiveButton("Yes") { _, _ ->
                 viewModel.sendData(
-                    PacketParser.create_TX_SET(
+                    PacketParser.createTXSET(
                         txValue.substringBefore(" ").toByte()
                     )
                 )
@@ -109,7 +106,7 @@ class ConfigFragment : Fragment() {
             builder.setMessage("Do you really want to set the Bandwidth to $bwValue?")
             builder.setPositiveButton("Yes") { _, _ ->
                 viewModel.sendData(
-                    PacketParser.create_BW_SET(
+                    PacketParser.createBWSET(
                         bwValue.replace("'", "").substringBefore(" ").toInt()
                     )
                 )

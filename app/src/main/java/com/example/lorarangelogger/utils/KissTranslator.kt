@@ -3,10 +3,10 @@ package com.example.lorarangelogger.utils
 import java.io.InputStream
 
 object KissTranslator {
-    private val FEND = 0xC0.toByte()
-    private val FESC = 0xDB.toByte()
-    private val TFEND = 0xDC.toByte()
-    private val TFESC = 0xDD.toByte()
+    private const val FEND = 0xC0.toByte()
+    private const val FESC = 0xDB.toByte()
+    private const val TFEND = 0xDC.toByte()
+    private const val TFESC = 0xDD.toByte()
 
     private var escMode = false
     private val buf = mutableListOf<Byte>()
@@ -14,14 +14,18 @@ object KissTranslator {
     fun makeFrame(msg: ByteArray): ByteArray {
         val frame = mutableListOf(FEND)
         for (b in msg) {
-            if (b == FESC) {
-                frame.add(FESC)
-                frame.add(TFESC)
-            } else if (b == FEND) {
-                frame.add(FESC)
-                frame.add(TFEND)
-            } else {
-                frame.add(b)
+            when (b) {
+                FESC -> {
+                    frame.add(FESC)
+                    frame.add(TFESC)
+                }
+                FEND -> {
+                    frame.add(FESC)
+                    frame.add(TFEND)
+                }
+                else -> {
+                    frame.add(b)
+                }
             }
         }
         frame.add(FEND)
@@ -45,10 +49,10 @@ object KissTranslator {
             }
             if (escMode) {
                 escMode = false
-                if (c == TFESC) {
-                    c = FESC
+                c = if (c == TFESC) {
+                    FESC
                 } else if (c == TFEND) {
-                    c = FEND
+                    FEND
                 } else {
                     continue
                 }
