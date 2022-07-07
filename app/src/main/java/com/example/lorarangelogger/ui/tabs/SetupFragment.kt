@@ -84,18 +84,29 @@ class SetupFragment : Fragment() {
         }
 
         binding.buttonDevice.setOnClickListener {
-            if (ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                Log.d(TAG, "Bluetooth_connect permission missing")
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (ActivityCompat.checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    Log.d(TAG, "Bluetooth_connect permission missing")
                     requestPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+                } else {
+                    chooseDevice()
                 }
             } else {
-                chooseDevice()
+                if (ActivityCompat.checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                } else {
+                    chooseDevice()
+                }
             }
+
         }
 
         binding.buttonConn.setOnClickListener {
@@ -108,12 +119,7 @@ class SetupFragment : Fragment() {
         binding.buttonDisconnect.setOnClickListener {
             Log.d(TAG, "Trying to close connection")
             viewModel.closeBT()
-            if (viewModel.isOpen.value == true) {
-                Toast.makeText(requireContext(), "Something went wrong...", Toast.LENGTH_SHORT)
-                    .show()
-            } else {
-                Toast.makeText(requireContext(), "Connection closed!", Toast.LENGTH_SHORT).show()
-            }
+            Toast.makeText(requireContext(), "Connection closed!", Toast.LENGTH_SHORT).show()
         }
 
         checkFile()
